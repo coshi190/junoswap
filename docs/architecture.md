@@ -4,70 +4,56 @@
 
 ## System Overview
 
-CMswap is a Web3 application built with Next.js featuring multi-DEX swap aggregation and wallet connection infrastructure.
+CMswap is a multi-chain DeFi app — swap tokens across 7 DEXs, manage concentrated liquidity positions, and earn rewards from LP mining, all on 6 EVM chains.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     User Browser                            │
-│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│   │  Landing UI  │  │   Header     │  │  Wallet UI   │      │
-│   └──────────────┘  └──────────────┘  └──────────────┘      │
-│        │                   │                   │            │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              Next.js 15 (App Router)                 │   │
-│  │              SSR + SSG + RSC                         │   │
-│  └──────────────────────────────────────────────────────┘   │
-│        │                   │                   │            │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              Web3 Layer (wagmi + viem)               │   │
-│  │              TanStack Query + Zustand                │   │
-│  └──────────────────────────────────────────────────────┘   │
-│        │                   │                   │            │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              Swap Feature Layer                      │   │
-│  │              Multi-DEX Router (V2 + V3)              │   │
-│  │              Quote Aggregation                       │   │
-│  └──────────────────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              Earn Feature Layer                      │   │
-│  │              LP Position Management (V3)             │   │
-│  │              LP Mining (Uniswap V3 Staker)           │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+User Interface
+  Pages: Landing · Swap · Earn · Bridge · Launchpad
+  Shared: Wallet · Settings · Navigation
+  → app/ · components/
+    ↓
+Business Logic
+  Multi-DEX Aggregation · LP Management
+  Quote Comparison · Mining Rewards
+  → hooks/ · store/ · services/
+    ↓
+Blockchain Layer
+  wagmi + viem · 6 EVM Chains
+  Contract ABIs · RPC Providers
+  → lib/abis/ · lib/wagmi.ts · lib/dex-config.ts
 ```
 
 ---
 
 ## Architecture Principles
 
-### Why These Technologies?
+### Rendering Strategy
 
-**wagmi + viem**
-- Type-safe Web3 interactions without code generation
-- viem: 10x smaller than ethers, better performance
-- wagmi: React hooks built on viem, SSR compatible
+**Decision**: Landing page uses SSG (Static Site Generation); all feature pages (Swap, Earn) are client-side only.
 
-**Zustand over Redux**
-- Minimal boilerplate (1/10 the code)
-- Built-in TypeScript support
-- Perfect for client-side swap state
+**Why**: The landing page needs fast load times and SEO indexing. Feature pages require wallet connection and real-time blockchain state, which can only run in the browser.
 
-**Multi-DEX Aggregation**
-- Single interface for multiple liquidity sources
-- Best price discovery across protocols
-- Future-proof for adding more DEXs
+**Trade-off**: Feature pages have a blank-shell initial load — the UI only renders after JS hydrates and wallet state resolves.
 
-**These Specific Chains**
-- KUB ecosystem: Primary target audience
-- JBC Chain: Partner protocol
-- BSC/Base/World: Major liquidity hubs
+### State Management
 
-### Key Decisions
+**Decision**: Zustand for client-side state (swap form, earn tabs). TanStack Query for async server state (balances, quotes). No Redux.
 
-**Server-Side Rendering**: Landing page pre-rendered for SEO and performance
-**Client-Side Features**: Web3 interactions run client-side only
-**Cookie Storage**: SSR-compatible state persistence
-**Debounced Quotes**: 500ms delay reduces RPC calls by 80%+
+**Why**: Swap form state is purely client-side and doesn't need Redux complexity. TanStack Query handles caching and invalidation of blockchain data (balances: 30s stale time, quotes: no cache) better than manual state.
+
+### Multi-DEX Design
+
+**Decision**: All DEXs queried in parallel with a unified interface. Results compared and sorted by output amount.
+
+**Why**: No single DEX has the best price for every pair. Parallel queries add zero latency since RPC calls are independent. The unified interface (`lib/dex-config.ts`) makes adding new DEXs a config change, not a code change.
+
+**Trade-off**: More RPC calls per quote — mitigated by 500ms input debouncing, which reduces total calls by ~80%.
+
+### Chain Coverage
+
+**Decision**: Support KUB (primary), JBC (partner), and BSC/Base/World (liquidity hubs). Use wagmi's multi-chain config for all chains simultaneously.
+
+**Why**: KUB and JBC are the target ecosystems. BSC, Base, and Worldchain are added for their deep liquidity — users can access major tokens without leaving the app.
 
 ---
 
@@ -147,18 +133,6 @@ components/
 | BNB Chain | 56 | 56.rpc.thirdweb.com | bscscan.com | ✅ Active |
 
 **Config**: `lib/wagmi.ts`
-
-### Wallet Connection Flow
-
-```
-User clicks "Connect Wallet"
-  └─> ConnectModal: List available wallets (injected, WalletConnect, Coinbase)
-  └─> User selects → wagmi useConnect()
-  └─> Success: Show address in ConnectButton
-  └─> Click address → AccountDropdown (copy, explorer, disconnect)
-```
-
-**Components**: `components/web3/`
 
 ### DEX Configuration
 

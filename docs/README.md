@@ -7,7 +7,7 @@
 **The fastest way to trade tokens across multiple chains.**
 Get the best prices across all DEXs with one click. No registration. No KYC. Just connect and swap.
 
-[Swap →](/swap) · [Earn →](/earn) · [Documentation →](./architecture.md) · [Discord →](https://discord.gg/k92ReT5EYy)
+[Swap →](https://v1.cmswap.xyz/swap) · [Earn →](https://v1.cmswap.xyz/earn) · [Documentation →](./architecture.md) · [Discord →](https://discord.gg/k92ReT5EYy)
 
 ---
 
@@ -49,7 +49,6 @@ Get the best prices across all DEXs with one click. No registration. No KYC. Jus
 bun run dev      # Start development server
 bun run build    # Build for production
 bun run start    # Start production server
-bun run lint     # Run ESLint
 ```
 
 For tech stack, project structure, architecture, and code reference — see [architecture.md](./architecture.md).
