@@ -317,7 +317,7 @@ export function BridgeCard() {
                     onClick={handleBridge}
                 >
                     {!isConnected
-                        ? 'Connect Wallet to Bridge'
+                        ? 'Connect Wallet'
                         : isSameChain
                           ? 'Select Different Chains'
                           : isWrongChain

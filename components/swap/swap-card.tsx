@@ -485,7 +485,7 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                     }}
                 >
                     {!isConnected
-                        ? 'Connect Wallet to Swap'
+                        ? 'Connect Wallet'
                         : isSameTokenSwap
                           ? 'Select Different Tokens'
                           : amountInBigInt > 0n && amountInBigInt > balanceInValue
