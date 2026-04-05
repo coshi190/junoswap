@@ -4,6 +4,7 @@ import * as React from 'react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { wagmiConfig } from '@/lib/wagmi'
+import '@/lib/lifi' // activates LI.FI SDK config (integrator + fee + EVM provider)
 
 const queryClient = new QueryClient({
     defaultOptions: {
