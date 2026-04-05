@@ -3,8 +3,8 @@
 import { useMemo } from 'react'
 import { useAccount, useChainId } from 'wagmi'
 import { Droplets } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -195,16 +195,12 @@ export function PositionsList() {
     }
     if (filteredPositions.length === 0) {
         return (
-            <Card>
-                <CardContent className="py-12">
-                    <EmptyState
-                        icon={Droplets}
-                        title="No liquidity positions"
-                        description="You don't have any liquidity positions yet."
-                        action={<Button onClick={() => openAddLiquidity()}>Create Position</Button>}
-                    />
-                </CardContent>
-            </Card>
+            <EmptyState
+                icon={Droplets}
+                title="No liquidity positions"
+                description="You don't have any liquidity positions yet."
+                action={<Button onClick={() => openAddLiquidity()}>Create Position</Button>}
+            />
         )
     }
     return (

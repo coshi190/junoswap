@@ -3,8 +3,8 @@
 import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
 import { Layers } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -141,15 +141,11 @@ export function PoolsList() {
     }
     if (pools.length === 0) {
         return (
-            <Card>
-                <CardContent className="py-12">
-                    <EmptyState
-                        icon={Layers}
-                        title="No pools available"
-                        description="No pools available on this chain."
-                    />
-                </CardContent>
-            </Card>
+            <EmptyState
+                icon={Layers}
+                title="No pools available"
+                description="No pools available on this chain."
+            />
         )
     }
     return (

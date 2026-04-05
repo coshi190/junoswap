@@ -283,8 +283,8 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
     }
     return (
         <Card>
-            <CardContent className="space-y-6 p-6">
-                <div className="space-y-2">
+            <CardContent className="p-0">
+                <div className="space-y-2 p-6">
                     <div className="flex items-center justify-between">
                         <Label htmlFor="amount-in">From</Label>
                         <span
@@ -320,18 +320,19 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                         <TokenSelect token={tokenIn} tokens={tokens} onSelect={setTokenIn} />
                     </div>
                 </div>
-                <div className="flex justify-center">
+                <div className="relative flex items-center justify-center py-1">
+                    <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="relative z-10 h-8 w-8 rounded-full border bg-background"
                         onClick={handleSwapTokens}
                         disabled={!tokenIn || !tokenOut}
                     >
                         <ArrowDownUp className="h-4 w-4" />
                     </Button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 p-6">
                     <div className="flex items-center justify-between">
                         <Label htmlFor="amount-out">To</Label>
                         <span className="text-xs text-muted-foreground">
@@ -356,170 +357,182 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                         <TokenSelect token={tokenOut} tokens={tokens} onSelect={setTokenOut} />
                     </div>
                 </div>
-                {bestQuote && tokenIn && tokenOut && !isQuoteLoading && (
-                    <Card className="bg-muted/50">
-                        <CardContent className="space-y-1 p-3 text-xs">
-                            {isWrapUnwrap && (
-                                <>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Operation</span>
-                                        <span className="font-semibold">
-                                            {wrapOperation === 'wrap'
-                                                ? 'Wrap KUB → tKKUB'
-                                                : 'Unwrap tKKUB → KUB'}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Rate</span>
-                                        <span className="font-semibold">1:1</span>
-                                    </div>
-                                </>
-                            )}
-                            {!isWrapUnwrap && (
-                                <>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Rate</span>
-                                        <span
-                                            className="font-medium cursor-pointer hover:underline flex items-center gap-1"
-                                            onClick={() => setIsRateFlipped(!isRateFlipped)}
-                                            title="Click to flip rate"
-                                        >
-                                            {!isRateFlipped ? (
-                                                <>
-                                                    1 {tokenIn.symbol} ={' '}
-                                                    {amountIn && parseFloat(amountIn) > 0
-                                                        ? (
-                                                              parseFloat(displayAmountOut) /
-                                                              parseFloat(amountIn)
-                                                          ).toFixed(6)
-                                                        : '0'}{' '}
-                                                    {tokenOut.symbol}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    1 {tokenOut.symbol} ={' '}
-                                                    {displayAmountOut &&
-                                                    parseFloat(displayAmountOut) > 0
-                                                        ? (
-                                                              parseFloat(amountIn) /
-                                                              parseFloat(displayAmountOut)
-                                                          ).toFixed(6)
-                                                        : '0'}{' '}
-                                                    {tokenIn.symbol}
-                                                </>
-                                            )}
-                                            <ArrowRightLeft className="h-3 w-3 text-muted-foreground" />
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Min. Received</span>
-                                        <span className="font-medium">
-                                            {formatUnits(amountOutMinimum, tokenOut.decimals)}{' '}
-                                            {tokenOut.symbol}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Fee</span>
-                                        <span className="font-medium">
-                                            {(fee / 10000).toFixed(2)}%
-                                        </span>
-                                    </div>
-                                    {isMultiHop &&
-                                        bestRoute &&
-                                        bestRoute.route.intermediaryTokens.length > 0 && (
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-muted-foreground">Route</span>
-                                                <span className="font-medium flex items-center gap-1">
-                                                    <span className="text-xs uppercase">
-                                                        {bestRoute.dexId}
+                <div className="space-y-4 p-6">
+                    {bestQuote && tokenIn && tokenOut && !isQuoteLoading && (
+                        <Card className="bg-muted/50 p-1">
+                            <CardContent className="space-y-1 p-3 text-xs">
+                                {isWrapUnwrap && (
+                                    <>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Operation</span>
+                                            <span className="font-semibold">
+                                                {wrapOperation === 'wrap'
+                                                    ? 'Wrap KUB → tKKUB'
+                                                    : 'Unwrap tKKUB → KUB'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Rate</span>
+                                            <span className="font-semibold">1:1</span>
+                                        </div>
+                                    </>
+                                )}
+                                {!isWrapUnwrap && (
+                                    <>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Rate</span>
+                                            <span
+                                                className="font-medium cursor-pointer hover:underline flex items-center gap-1"
+                                                onClick={() => setIsRateFlipped(!isRateFlipped)}
+                                                title="Click to flip rate"
+                                            >
+                                                {!isRateFlipped ? (
+                                                    <>
+                                                        1 {tokenIn.symbol} ={' '}
+                                                        {amountIn && parseFloat(amountIn) > 0
+                                                            ? (
+                                                                  parseFloat(displayAmountOut) /
+                                                                  parseFloat(amountIn)
+                                                              ).toFixed(6)
+                                                            : '0'}{' '}
+                                                        {tokenOut.symbol}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        1 {tokenOut.symbol} ={' '}
+                                                        {displayAmountOut &&
+                                                        parseFloat(displayAmountOut) > 0
+                                                            ? (
+                                                                  parseFloat(amountIn) /
+                                                                  parseFloat(displayAmountOut)
+                                                              ).toFixed(6)
+                                                            : '0'}{' '}
+                                                        {tokenIn.symbol}
+                                                    </>
+                                                )}
+                                                <ArrowRightLeft className="h-3 w-3 text-muted-foreground" />
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                                Min. Received
+                                            </span>
+                                            <span className="font-medium">
+                                                {formatUnits(amountOutMinimum, tokenOut.decimals)}{' '}
+                                                {tokenOut.symbol}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Fee</span>
+                                            <span className="font-medium">
+                                                {(fee / 10000).toFixed(2)}%
+                                            </span>
+                                        </div>
+                                        {isMultiHop &&
+                                            bestRoute &&
+                                            bestRoute.route.intermediaryTokens.length > 0 && (
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-muted-foreground">
+                                                        Route
                                                     </span>
-                                                    <span className="text-muted-foreground">•</span>
-                                                    {tokenIn?.symbol}
-                                                    <span className="text-muted-foreground">→</span>
-                                                    {bestRoute.route.intermediaryTokens
-                                                        .map((t) => t.symbol)
-                                                        .join(' → ')}
-                                                    <span className="text-muted-foreground">→</span>
-                                                    {tokenOut?.symbol}
-                                                </span>
-                                            </div>
-                                        )}
-                                </>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-                <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                        <SettingsDialog
-                            currentSlippage={settings.slippage}
-                            currentDeadlineMinutes={settings.deadlineMinutes}
-                            onSave={handleSettingsSave}
-                        />
-                        <span>Slippage: {settings.slippage}%</span>
+                                                    <span className="font-medium flex items-center gap-1">
+                                                        <span className="text-xs uppercase">
+                                                            {bestRoute.dexId}
+                                                        </span>
+                                                        <span className="text-muted-foreground">
+                                                            •
+                                                        </span>
+                                                        {tokenIn?.symbol}
+                                                        <span className="text-muted-foreground">
+                                                            →
+                                                        </span>
+                                                        {bestRoute.route.intermediaryTokens
+                                                            .map((t) => t.symbol)
+                                                            .join(' → ')}
+                                                        <span className="text-muted-foreground">
+                                                            →
+                                                        </span>
+                                                        {tokenOut?.symbol}
+                                                    </span>
+                                                </div>
+                                            )}
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                    <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                            <SettingsDialog
+                                currentSlippage={settings.slippage}
+                                currentDeadlineMinutes={settings.deadlineMinutes}
+                                onSave={handleSettingsSave}
+                            />
+                            <span>Slippage: {settings.slippage}%</span>
+                        </div>
                     </div>
+                    <Button
+                        className="w-full"
+                        size="lg"
+                        disabled={
+                            !tokenIn ||
+                            !tokenOut ||
+                            isQuoteLoading ||
+                            isSameTokenSwap ||
+                            (isPreparing && !needsApprovalCheck) ||
+                            isExecuting ||
+                            (needsApprovalCheck && (isApproving || isConfirmingApproval)) ||
+                            (amountInBigInt > 0n && amountInBigInt > balanceInValue)
+                        }
+                        onClick={() => {
+                            if (!isConnected) {
+                                setIsConnectModalOpen(true)
+                                return
+                            }
+                            if (needsApprovalCheck) {
+                                approve()
+                            } else if (!isPreparing) {
+                                swap()
+                            }
+                        }}
+                    >
+                        {!isConnected
+                            ? 'Connect Wallet'
+                            : isSameTokenSwap
+                              ? 'Select Different Tokens'
+                              : amountInBigInt > 0n && amountInBigInt > balanceInValue
+                                ? 'Insufficient Balance'
+                                : isWrapUnwrap
+                                  ? isPreparing
+                                      ? 'Simulating...'
+                                      : isExecuting
+                                        ? wrapOperation === 'wrap'
+                                            ? 'Wrapping...'
+                                            : 'Unwrapping...'
+                                        : isConfirmingSwap
+                                          ? 'Confirming...'
+                                          : wrapOperation === 'wrap'
+                                            ? 'Wrap KUB'
+                                            : 'Unwrap tKKUB'
+                                  : needsApprovalCheck
+                                    ? isApproving
+                                        ? 'Approving...'
+                                        : isConfirmingApproval
+                                          ? 'Confirming...'
+                                          : `Approve ${tokenIn?.symbol || 'Token'}`
+                                    : isPreparing
+                                      ? 'Simulating...'
+                                      : isExecuting
+                                        ? 'Swapping...'
+                                        : isConfirmingSwap
+                                          ? 'Confirming...'
+                                          : isQuoteLoading
+                                            ? 'Fetching Quote...'
+                                            : tokenIn && tokenOut
+                                              ? 'Swap'
+                                              : 'Select Tokens'}
+                    </Button>
                 </div>
-                <Button
-                    className="w-full"
-                    size="lg"
-                    disabled={
-                        !tokenIn ||
-                        !tokenOut ||
-                        isQuoteLoading ||
-                        isSameTokenSwap ||
-                        (isPreparing && !needsApprovalCheck) ||
-                        isExecuting ||
-                        (needsApprovalCheck && (isApproving || isConfirmingApproval)) ||
-                        (amountInBigInt > 0n && amountInBigInt > balanceInValue)
-                    }
-                    onClick={() => {
-                        if (!isConnected) {
-                            setIsConnectModalOpen(true)
-                            return
-                        }
-                        if (needsApprovalCheck) {
-                            approve()
-                        } else if (!isPreparing) {
-                            swap()
-                        }
-                    }}
-                >
-                    {!isConnected
-                        ? 'Connect Wallet'
-                        : isSameTokenSwap
-                          ? 'Select Different Tokens'
-                          : amountInBigInt > 0n && amountInBigInt > balanceInValue
-                            ? 'Insufficient Balance'
-                            : isWrapUnwrap
-                              ? isPreparing
-                                  ? 'Simulating...'
-                                  : isExecuting
-                                    ? wrapOperation === 'wrap'
-                                        ? 'Wrapping...'
-                                        : 'Unwrapping...'
-                                    : isConfirmingSwap
-                                      ? 'Confirming...'
-                                      : wrapOperation === 'wrap'
-                                        ? 'Wrap KUB'
-                                        : 'Unwrap tKKUB'
-                              : needsApprovalCheck
-                                ? isApproving
-                                    ? 'Approving...'
-                                    : isConfirmingApproval
-                                      ? 'Confirming...'
-                                      : `Approve ${tokenIn?.symbol || 'Token'}`
-                                : isPreparing
-                                  ? 'Simulating...'
-                                  : isExecuting
-                                    ? 'Swapping...'
-                                    : isConfirmingSwap
-                                      ? 'Confirming...'
-                                      : isQuoteLoading
-                                        ? 'Fetching Quote...'
-                                        : tokenIn && tokenOut
-                                          ? 'Swap'
-                                          : 'Select Tokens'}
-                </Button>
                 <ConnectModal open={isConnectModalOpen} onOpenChange={setIsConnectModalOpen} />
             </CardContent>
         </Card>

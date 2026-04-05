@@ -130,9 +130,9 @@ export function BridgeCard() {
 
     return (
         <Card>
-            <CardContent className="space-y-6 p-6">
-                {/* From section — matches swap-card layout */}
-                <div className="space-y-2">
+            <CardContent className="p-0">
+                {/* From section */}
+                <div className="space-y-2 p-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Label htmlFor="bridge-amount-in">From</Label>
@@ -181,15 +181,21 @@ export function BridgeCard() {
                     </div>
                 </div>
 
-                {/* Swap direction button — matches swap-card */}
-                <div className="flex justify-center">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={swapDirection}>
+                {/* Swap direction button */}
+                <div className="relative flex items-center justify-center py-1">
+                    <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="relative z-10 h-8 w-8 rounded-full border bg-background"
+                        onClick={swapDirection}
+                    >
                         <ArrowDownUp className="h-4 w-4" />
                     </Button>
                 </div>
 
-                {/* To section — matches swap-card layout */}
-                <div className="space-y-2">
+                {/* To section */}
+                <div className="space-y-2 p-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Label htmlFor="bridge-amount-out">To</Label>
@@ -210,140 +216,142 @@ export function BridgeCard() {
                     </div>
                 </div>
 
-                {/* Quote details — matches swap-card's rate card pattern */}
-                {route && !isQuoteLoading && (
-                    <Card className="bg-muted/50">
-                        <CardContent className="space-y-1 p-3 text-xs">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Rate</span>
-                                <span
-                                    className="font-medium cursor-pointer hover:underline flex items-center gap-1"
-                                    onClick={() => setIsRateFlipped(!isRateFlipped)}
-                                    title="Click to flip rate"
-                                >
-                                    {!isRateFlipped ? (
-                                        <>
-                                            1 {fromToken?.symbol} ={' '}
-                                            {amountIn && parseFloat(amountIn) > 0
-                                                ? (
-                                                      parseFloat(estimatedOutput) /
-                                                      parseFloat(amountIn)
-                                                  ).toFixed(6)
-                                                : '0'}{' '}
-                                            {toToken?.symbol}
-                                        </>
-                                    ) : (
-                                        <>
-                                            1 {toToken?.symbol} ={' '}
-                                            {estimatedOutput && parseFloat(estimatedOutput) > 0
-                                                ? (
-                                                      parseFloat(amountIn) /
-                                                      parseFloat(estimatedOutput)
-                                                  ).toFixed(6)
-                                                : '0'}{' '}
-                                            {fromToken?.symbol}
-                                        </>
-                                    )}
-                                    <ArrowRightLeft className="h-3 w-3 text-muted-foreground" />
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Min. Received</span>
-                                <span className="font-medium">
-                                    {toToken
-                                        ? `${formatUnits(BigInt(route.toAmountMin), toToken.decimals)} ${toToken.symbol}`
-                                        : '-'}
-                                </span>
-                            </div>
-                            {gasCostUSD && (
+                {/* Bottom section: quote, settings, button, status */}
+                <div className="space-y-4 p-6">
+                    {route && !isQuoteLoading && (
+                        <Card className="bg-muted/50 p-1">
+                            <CardContent className="space-y-1 p-3 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Fee</span>
-                                    <span className="font-medium">${gasCostUSD}</span>
-                                </div>
-                            )}
-                            {feeCosts.length > 0 && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Bridge Fee</span>
-                                    <span className="font-medium">
-                                        {feeCosts.map((f) => f.percentage).join(' + ')}
+                                    <span className="text-muted-foreground">Rate</span>
+                                    <span
+                                        className="font-medium cursor-pointer hover:underline flex items-center gap-1"
+                                        onClick={() => setIsRateFlipped(!isRateFlipped)}
+                                        title="Click to flip rate"
+                                    >
+                                        {!isRateFlipped ? (
+                                            <>
+                                                1 {fromToken?.symbol} ={' '}
+                                                {amountIn && parseFloat(amountIn) > 0
+                                                    ? (
+                                                          parseFloat(estimatedOutput) /
+                                                          parseFloat(amountIn)
+                                                      ).toFixed(6)
+                                                    : '0'}{' '}
+                                                {toToken?.symbol}
+                                            </>
+                                        ) : (
+                                            <>
+                                                1 {toToken?.symbol} ={' '}
+                                                {estimatedOutput && parseFloat(estimatedOutput) > 0
+                                                    ? (
+                                                          parseFloat(amountIn) /
+                                                          parseFloat(estimatedOutput)
+                                                      ).toFixed(6)
+                                                    : '0'}{' '}
+                                                {fromToken?.symbol}
+                                            </>
+                                        )}
+                                        <ArrowRightLeft className="h-3 w-3 text-muted-foreground" />
                                     </span>
                                 </div>
-                            )}
-                            {estimatedDuration != null && (
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Est. Time</span>
+                                    <span className="text-muted-foreground">Min. Received</span>
                                     <span className="font-medium">
-                                        {formatDuration(estimatedDuration)}
+                                        {toToken
+                                            ? `${formatUnits(BigInt(route.toAmountMin), toToken.decimals)} ${toToken.symbol}`
+                                            : '-'}
                                     </span>
                                 </div>
-                            )}
-                            {route.steps[0]?.toolDetails && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Provider</span>
-                                    <span className="font-medium">
-                                        {route.steps[0].toolDetails.name}
-                                    </span>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
+                                {gasCostUSD && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Fee</span>
+                                        <span className="font-medium">${gasCostUSD}</span>
+                                    </div>
+                                )}
+                                {feeCosts.length > 0 && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Bridge Fee</span>
+                                        <span className="font-medium">
+                                            {feeCosts.map((f) => f.percentage).join(' + ')}
+                                        </span>
+                                    </div>
+                                )}
+                                {estimatedDuration != null && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Est. Time</span>
+                                        <span className="font-medium">
+                                            {formatDuration(estimatedDuration)}
+                                        </span>
+                                    </div>
+                                )}
+                                {route.steps[0]?.toolDetails && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Provider</span>
+                                        <span className="font-medium">
+                                            {route.steps[0].toolDetails.name}
+                                        </span>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
 
-                {/* Settings — reuse swap's SettingsDialog */}
-                <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                        <SettingsDialog
-                            currentSlippage={settings.slippage * 100}
-                            currentDeadlineMinutes={20}
-                            onSave={handleSettingsSave}
-                        />
-                        <span>Slippage: {(settings.slippage * 100).toFixed(1)}%</span>
+                    {/* Settings */}
+                    <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                            <SettingsDialog
+                                currentSlippage={settings.slippage * 100}
+                                currentDeadlineMinutes={20}
+                                onSave={handleSettingsSave}
+                            />
+                            <span>Slippage: {(settings.slippage * 100).toFixed(1)}%</span>
+                        </div>
                     </div>
+
+                    {/* Bridge button */}
+                    <Button
+                        className="w-full"
+                        size="lg"
+                        disabled={
+                            isQuoteLoading ||
+                            !fromToken ||
+                            !toToken ||
+                            isSameChain ||
+                            isInsufficientBalance ||
+                            isExecuting ||
+                            (!route && !isWrongChain)
+                        }
+                        onClick={handleBridge}
+                    >
+                        {!isConnected
+                            ? 'Connect Wallet'
+                            : isSameChain
+                              ? 'Select Different Chains'
+                              : isWrongChain
+                                ? `Switch to ${getChainMetadata(fromChainId)?.name ?? 'Source Chain'}`
+                                : isInsufficientBalance
+                                  ? 'Insufficient Balance'
+                                  : !amountIn || parseFloat(amountIn) <= 0
+                                    ? 'Enter Amount'
+                                    : isExecuting
+                                      ? 'Bridging...'
+                                      : isQuoteLoading
+                                        ? 'Fetching Quote...'
+                                        : !route
+                                          ? 'No Route Available'
+                                          : 'Bridge'}
+                    </Button>
+
+                    {/* Bridge status tracker */}
+                    {showStatus && activeRoute && (
+                        <BridgeStatus
+                            route={activeRoute}
+                            onComplete={() => {
+                                refetchBalanceIn()
+                            }}
+                        />
+                    )}
                 </div>
-
-                {/* Bridge button — matches swap-card button pattern */}
-                <Button
-                    className="w-full"
-                    size="lg"
-                    disabled={
-                        isQuoteLoading ||
-                        !fromToken ||
-                        !toToken ||
-                        isSameChain ||
-                        isInsufficientBalance ||
-                        isExecuting ||
-                        (!route && !isWrongChain)
-                    }
-                    onClick={handleBridge}
-                >
-                    {!isConnected
-                        ? 'Connect Wallet'
-                        : isSameChain
-                          ? 'Select Different Chains'
-                          : isWrongChain
-                            ? `Switch to ${getChainMetadata(fromChainId)?.name ?? 'Source Chain'}`
-                            : isInsufficientBalance
-                              ? 'Insufficient Balance'
-                              : !amountIn || parseFloat(amountIn) <= 0
-                                ? 'Enter Amount'
-                                : isExecuting
-                                  ? 'Bridging...'
-                                  : isQuoteLoading
-                                    ? 'Fetching Quote...'
-                                    : !route
-                                      ? 'No Route Available'
-                                      : 'Bridge'}
-                </Button>
-
-                {/* Bridge status tracker */}
-                {showStatus && activeRoute && (
-                    <BridgeStatus
-                        route={activeRoute}
-                        onComplete={() => {
-                            refetchBalanceIn()
-                        }}
-                    />
-                )}
 
                 <ConnectModal open={isConnectModalOpen} onOpenChange={setIsConnectModalOpen} />
             </CardContent>

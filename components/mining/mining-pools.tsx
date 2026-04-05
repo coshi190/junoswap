@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
 import type { Address } from 'viem'
 import { Gem, Loader2, Unplug } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -55,30 +54,22 @@ export function MiningPools() {
     }
     if (!stakerAddress) {
         return (
-            <Card>
-                <CardContent className="pt-6">
-                    <EmptyState
-                        icon={Unplug}
-                        title="Not available"
-                        description="LP Mining is not available on this chain."
-                        compact
-                    />
-                </CardContent>
-            </Card>
+            <EmptyState
+                icon={Unplug}
+                title="Not available"
+                description="LP Mining is not available on this chain."
+                compact
+            />
         )
     }
     if (isLoading) {
         return (
-            <Card>
-                <CardContent className="pt-6">
-                    <EmptyState
-                        icon={Loader2}
-                        title="Loading incentives"
-                        compact
-                        className="[&_svg]:animate-spin [&_svg]:text-muted-foreground"
-                    />
-                </CardContent>
-            </Card>
+            <EmptyState
+                icon={Loader2}
+                title="Loading incentives"
+                compact
+                className="[&_svg]:animate-spin [&_svg]:text-muted-foreground"
+            />
         )
     }
     return (
@@ -102,16 +93,12 @@ export function MiningPools() {
                 </div>
             </div>
             {filteredIncentives.length === 0 ? (
-                <Card>
-                    <CardContent className="pt-6">
-                        <EmptyState
-                            icon={Gem}
-                            title="No active mining incentives"
-                            description="Check back later for new rewards programs."
-                            compact
-                        />
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={Gem}
+                    title="No active mining incentives"
+                    description="Check back later for new rewards programs."
+                    compact
+                />
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredIncentives.map((incentive) => (

@@ -21,28 +21,38 @@ export function EmptyState({
     return (
         <div
             className={cn(
-                'flex flex-col items-center justify-center text-center gap-2',
-                compact ? 'py-4' : 'py-6',
+                'flex flex-col items-center justify-center text-center',
+                compact ? 'gap-2 p-6' : 'gap-4 p-10',
                 className
             )}
         >
-            <div className={cn('mb-3 rounded-full bg-primary/10', compact ? 'p-2' : 'p-4')}>
-                <Icon className={cn('text-primary/50', compact ? 'h-6 w-6' : 'h-10 w-10')} />
+            <div
+                className={cn(
+                    'flex items-center justify-center',
+                    compact ? 'mb-1 h-12 w-12' : 'mb-2 h-16 w-16'
+                )}
+            >
+                <Icon className={cn('text-primary shrink-0', compact ? 'h-5 w-5' : 'h-16 w-16')} />
             </div>
-            <h3 className={cn('font-medium text-foreground', compact ? 'text-xs' : 'text-sm')}>
+            <h3
+                className={cn(
+                    'font-semibold tracking-tight text-foreground',
+                    compact ? 'text-sm' : 'text-base'
+                )}
+            >
                 {title}
             </h3>
             {description && (
                 <p
                     className={cn(
-                        'mt-1.5 max-w-xs text-muted-foreground',
+                        'max-w-xs leading-relaxed text-muted-foreground',
                         compact ? 'text-xs' : 'text-sm'
                     )}
                 >
                     {description}
                 </p>
             )}
-            {action && <div className="mt-4">{action}</div>}
+            {action && <div className={compact ? 'mt-2' : 'mt-3'}>{action}</div>}
         </div>
     )
 }

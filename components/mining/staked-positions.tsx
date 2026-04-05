@@ -79,16 +79,12 @@ export function StakedPositions() {
     }
     if (!address) {
         return (
-            <Card>
-                <CardContent className="pt-6">
-                    <EmptyState
-                        icon={Wallet}
-                        title="Connect wallet"
-                        description="Connect your wallet to view staked positions."
-                        compact
-                    />
-                </CardContent>
-            </Card>
+            <EmptyState
+                icon={Wallet}
+                title="Connect wallet"
+                description="Connect your wallet to view staked positions."
+                compact
+            />
         )
     }
     const isLoading =
@@ -99,33 +95,25 @@ export function StakedPositions() {
         isLoadingRewards
     if (isLoading) {
         return (
-            <Card>
-                <CardContent className="pt-6">
-                    <EmptyState
-                        icon={Loader2}
-                        title="Loading"
-                        description="Loading staked positions..."
-                        compact
-                        className="[&_svg]:animate-spin [&_svg]:text-muted-foreground"
-                    />
-                </CardContent>
-            </Card>
+            <EmptyState
+                icon={Loader2}
+                title="Loading"
+                description="Loading staked positions..."
+                compact
+                className="[&_svg]:animate-spin [&_svg]:text-muted-foreground"
+            />
         )
     }
     if (enrichedPositions.length === 0) {
         return (
             <div className="space-y-4">
                 <h2 className="text-lg font-semibold">My Staked Positions</h2>
-                <Card>
-                    <CardContent className="pt-6">
-                        <EmptyState
-                            icon={Coins}
-                            title="No staked positions"
-                            description="Stake your LP positions in a mining pool to earn rewards."
-                            compact
-                        />
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={Coins}
+                    title="No staked positions"
+                    description="Stake your LP positions in a mining pool to earn rewards."
+                    compact
+                />
             </div>
         )
     }
