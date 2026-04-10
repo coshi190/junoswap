@@ -1,0 +1,13 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.19"
+optimizer = true
+optimizer_runs = 200
+
+[rpc_endpoints]
+kub-testnet = "https://rpc-testnet.bitkubchain.io"
+
+[etherscan]
+kub-testnet = { key = "verify", url = "https://testnet.bkcscan.com/api" }
