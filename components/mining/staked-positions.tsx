@@ -2,13 +2,14 @@
 
 import { useMemo } from 'react'
 import { useAccount, useChainId } from 'wagmi'
-import type { Address } from 'viem'
-import { Coins, Loader2, Wallet } from 'lucide-react'
+import { Coins, Wallet } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
 import { EmptyState } from '@/components/ui/empty-state'
-import type { StakedPosition, IncentiveKey } from '@/types/earn'
+import type { StakedPosition } from '@/types/earn'
 import { usePositionsByTokenIds } from '@/hooks/useUserPositions'
 import { useIncentives } from '@/hooks/useIncentives'
 import { useStakedPositions } from '@/hooks/useStakedPositions'
@@ -18,29 +19,48 @@ import { useEarnStore } from '@/store/earn-store'
 import { formatTokenAmount } from '@/services/tokens'
 import { formatTimeRemaining } from '@/services/mining/incentives'
 import { getV3StakerAddress } from '@/lib/dex-config'
+import { KNOWN_INCENTIVES } from '@/lib/mining-constants'
 
-const KNOWN_INCENTIVES: Record<number, IncentiveKey[]> = {
-    25925: [
-        // KUB Testnet
-        {
-            rewardToken: '0x23352915164527e0AB53Ca5519aec5188aa224A2' as Address,
-            pool: '0x81182579f4271B910bF108913Be78F0D9C44AaBa' as Address,
-            startTime: 1764152820,
-            endTime: 1795688820,
-            refundee: '0xCA811301C650C92fD45ed32A81C0B757C61595b6' as Address,
-        },
-    ],
-    8899: [], // JBC
-    96: [
-        // KUB Mainnet
-        {
-            rewardToken: '0xbB2d2523cF7737Bc9a1884aC2cC1C690Dd8f6D3e' as Address,
-            pool: '0xcf0C912a4Efa1b12Eab70f3Ae701d6219103dF0F' as Address,
-            startTime: 1765555920,
-            endTime: 1766160720,
-            refundee: '0x372719aF636C3a8f3819038b782f032436296993' as Address,
-        },
-    ],
+function LoadingState() {
+    return (
+        <div className="space-y-3">
+            {[1, 2].map((i) => (
+                <Card key={i}>
+                    <CardContent className="p-5">
+                        <div className="animate-pulse space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex -space-x-2">
+                                        <div className="h-9 w-9 rounded-full bg-muted" />
+                                        <div className="h-9 w-9 rounded-full bg-muted" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="h-4 w-28 bg-muted rounded" />
+                                        <div className="h-3 w-20 bg-muted rounded" />
+                                    </div>
+                                </div>
+                                <div className="h-5 w-16 bg-muted rounded-full" />
+                            </div>
+                            <div className="h-[1px] bg-muted" />
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <div className="h-3 w-24 bg-muted rounded" />
+                                    <div className="h-6 w-20 bg-muted rounded" />
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="h-3 w-28 bg-muted rounded" />
+                                    <div className="h-4 w-24 bg-muted rounded" />
+                                </div>
+                                <div className="flex items-end justify-end">
+                                    <div className="h-8 w-16 bg-muted rounded" />
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    )
 }
 
 export function StakedPositions() {
@@ -95,19 +115,22 @@ export function StakedPositions() {
         isLoadingRewards
     if (isLoading) {
         return (
-            <EmptyState
-                icon={Loader2}
-                title="Loading"
-                description="Loading staked positions..."
-                compact
-                className="[&_svg]:animate-spin [&_svg]:text-muted-foreground"
-            />
+            <div className="space-y-4">
+                <div>
+                    <h2 className="text-lg font-semibold">My Staked Positions</h2>
+                    <p className="text-sm text-muted-foreground">Loading staked positions...</p>
+                </div>
+                <LoadingState />
+            </div>
         )
     }
     if (enrichedPositions.length === 0) {
         return (
             <div className="space-y-4">
-                <h2 className="text-lg font-semibold">My Staked Positions</h2>
+                <div>
+                    <h2 className="text-lg font-semibold">My Staked Positions</h2>
+                    <p className="text-sm text-muted-foreground">0 staked positions</p>
+                </div>
                 <EmptyState
                     icon={Coins}
                     title="No staked positions"
@@ -148,44 +171,92 @@ function StakedPositionCard({ stakedPosition, onUnstake }: StakedPositionCardPro
     const { position, incentive, pendingRewards } = stakedPosition
     const timeRemaining = formatTimeRemaining(incentive.endTime)
     const formattedRewards = formatTokenAmount(pendingRewards, incentive.rewardTokenInfo.decimals)
+
     return (
-        <Card>
-            <CardContent className="pt-6">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                            <span className="font-medium">
-                                {position.token0Info.symbol} / {position.token1Info.symbol}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                                #{position.tokenId.toString()}
-                            </Badge>
-                            {incentive.isActive ? (
-                                <Badge
-                                    variant="outline"
-                                    className="bg-green-500/10 text-green-500 border-green-500/20"
-                                >
-                                    Active
-                                </Badge>
-                            ) : (
-                                <Badge variant="outline" className="text-muted-foreground">
-                                    Ended
-                                </Badge>
-                            )}
+        <Card className="position-card-hover">
+            <CardContent className="p-5">
+                {/* Header: Identity + Status */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex -space-x-2">
+                            <Avatar className="h-9 w-9 shrink-0 border-2 border-background">
+                                <AvatarImage
+                                    src={position.token0Info.logo}
+                                    alt={position.token0Info.symbol}
+                                />
+                                <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                    {position.token0Info.symbol.slice(0, 2)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <Avatar className="h-9 w-9 shrink-0 border-2 border-background">
+                                <AvatarImage
+                                    src={position.token1Info.logo}
+                                    alt={position.token1Info.symbol}
+                                />
+                                <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                    {position.token1Info.symbol.slice(0, 2)}
+                                </AvatarFallback>
+                            </Avatar>
                         </div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                            Reward: {incentive.rewardTokenInfo.symbol} &middot; {timeRemaining}
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="font-semibold">
+                                    {position.token0Info.symbol} / {position.token1Info.symbol}
+                                </span>
+                                <Badge variant="outline" className="text-xs">
+                                    #{position.tokenId.toString()}
+                                </Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                                Mining for {incentive.rewardTokenInfo.symbol}
+                            </div>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <div className="text-xs text-muted-foreground">Pending Rewards</div>
-                        <div className="font-bold text-lg">
-                            {formattedRewards} {incentive.rewardTokenInfo.symbol}
+                    {incentive.isActive ? (
+                        <Badge
+                            variant="outline"
+                            className="bg-emerald-500/15 text-emerald-400 border-emerald-500/25"
+                        >
+                            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                            Active
+                        </Badge>
+                    ) : (
+                        <Badge variant="outline" className="text-muted-foreground">
+                            Ended
+                        </Badge>
+                    )}
+                </div>
+
+                <Separator className="my-4" />
+
+                {/* Data grid */}
+                <div className="grid grid-cols-3 gap-4">
+                    <div>
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Pending Rewards
+                        </div>
+                        <div className="text-lg font-bold text-emerald-400 font-mono tracking-tight mt-1">
+                            {formattedRewards}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                            {incentive.rewardTokenInfo.symbol}
                         </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => onUnstake(stakedPosition)}>
-                        Unstake
-                    </Button>
+                    <div>
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Time Remaining
+                        </div>
+                        <div className="text-sm font-medium mt-1">{timeRemaining}</div>
+                    </div>
+                    <div className="flex items-end justify-end">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onUnstake(stakedPosition)}
+                        >
+                            Unstake
+                        </Button>
+                    </div>
                 </div>
             </CardContent>
         </Card>

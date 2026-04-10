@@ -13,7 +13,13 @@ import { RemoveLiquidityDialog } from '@/components/positions/remove-liquidity-d
 import { CollectFeesDialog } from '@/components/positions/collect-fees-dialog'
 import { PositionDetailsModal } from '@/components/positions/position-details-modal'
 import { IncreaseLiquidityDialog } from '@/components/positions/increase-liquidity-dialog'
-import { MiningPools, StakedPositions, StakeDialog, UnstakeDialog } from '@/components/mining'
+import {
+    MiningPools,
+    MiningSummary,
+    StakedPositions,
+    StakeDialog,
+    UnstakeDialog,
+} from '@/components/mining'
 import { useEarnStore, useActiveTab } from '@/store/earn-store'
 import { getV3Config } from '@/lib/dex-config'
 import { ConnectModal } from '@/components/web3/connect-modal'
@@ -40,7 +46,7 @@ function EarnContent() {
     }
     return (
         <div className="flex min-h-screen items-start justify-center p-4 pt-8">
-            <div className="w-full max-w-4xl space-y-4">
+            <div className="w-full max-w-5xl space-y-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Liquidity</h1>
                     <Button
@@ -72,7 +78,8 @@ function EarnContent() {
                     <TabsContent value="pools" className="mt-4">
                         <PoolsList />
                     </TabsContent>
-                    <TabsContent value="mining" className="mt-4 space-y-8">
+                    <TabsContent value="mining" className="mt-4 space-y-6">
+                        <MiningSummary />
                         <MiningPools />
                         <StakedPositions />
                     </TabsContent>

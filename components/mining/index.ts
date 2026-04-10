@@ -1,5 +1,6 @@
-export { IncentiveCard } from './incentive-card'
+export { IncentiveRow } from './incentive-row'
 export { MiningPools } from './mining-pools'
+export { MiningSummary } from './mining-summary'
 export { StakedPositions } from './staked-positions'
 export { StakeDialog } from './stake-dialog'
 export { UnstakeDialog } from './unstake-dialog'
