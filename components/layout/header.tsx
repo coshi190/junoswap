@@ -31,8 +31,8 @@ export function Header() {
             <div className="flex h-16 justify-between items-center px-6">
                 <div className="flex items-center w-[180px]">
                     <Link href="/" className="flex items-center space-x-2">
-                        <Image src="/favicon.ico" alt="cmswap" width={32} height={32} />
-                        <span className="hidden md:inline text-xl font-bold">CMswap</span>
+                        <Image src="/favicon.ico" alt="junoswap" width={32} height={32} />
+                        <span className="hidden md:inline text-xl font-bold">Junoswap</span>
                     </Link>
                 </div>
                 <NavigationMenu className="hidden md:flex flex-1 justify-center">

@@ -64,7 +64,7 @@ export const useSwapStore = create<SwapStore>()(
             (set, _get) => ({
                 ...initialState,
                 settings: defaultSettings,
-                selectedDex: 'cmswap',
+                selectedDex: 'junoswap',
                 dexQuotes: {},
                 bestQuoteDex: null,
 
@@ -156,7 +156,7 @@ export const useSwapStore = create<SwapStore>()(
                 reset: () => set(initialState),
             }),
             {
-                name: 'cmswap-swap-store',
+                name: 'junoswap-swap-store',
                 // Only persist settings, not the current swap state
                 partialize: (state) => ({
                     settings: state.settings,
@@ -175,7 +175,7 @@ export const useSwapStore = create<SwapStore>()(
                 },
             }
         ),
-        { name: 'cmswap-swap' }
+        { name: 'junoswap-swap' }
     )
 )
 

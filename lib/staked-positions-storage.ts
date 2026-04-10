@@ -3,7 +3,7 @@
  * This provides fast loading on page refresh while being validated against on-chain state
  */
 
-const STORAGE_KEY = 'cmswap-staked-positions'
+const STORAGE_KEY = 'junoswap-staked-positions'
 
 interface StakedPositionsData {
     // chainId -> address -> tokenIds (as strings for JSON serialization)

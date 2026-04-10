@@ -20,12 +20,12 @@ async function getWalletClient() {
 
 /**
  * Initialize the LI.FI SDK with:
- * - integrator: identifies CMswap for fee collection
+ * - integrator: identifies Junoswap for fee collection
  * - fee: 3% integrator fee (requires LI.FI whitelisting to activate)
  * - EVM provider: bridges wagmi wallet client for tx execution
  */
 export const lifiConfig = createConfig({
-    integrator: 'cmswap',
+    integrator: 'junoswap',
     routeOptions: {
         fee: 0.03, // 3% integrator fee — deducted from fromToken
     },

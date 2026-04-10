@@ -67,7 +67,7 @@ export function Footer() {
                 <div className="mt-12 border-t border-border/50 pt-8">
                     <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                         <p className="text-sm text-muted-foreground/70">
-                            &copy; {new Date().getFullYear()} cmswap. All rights reserved.
+                            &copy; {new Date().getFullYear()} junoswap. All rights reserved.
                         </p>
                         <div className="flex gap-6">
                             <a

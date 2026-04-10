@@ -92,7 +92,7 @@ export const useBridgeStore = create<BridgeStore>()(
                 reset: () => set(initialState),
             }),
             {
-                name: 'cmswap-bridge-store',
+                name: 'junoswap-bridge-store',
                 partialize: (state) => ({
                     settings: state.settings,
                 }),
@@ -108,6 +108,6 @@ export const useBridgeStore = create<BridgeStore>()(
                 },
             }
         ),
-        { name: 'cmswap-bridge' }
+        { name: 'junoswap-bridge' }
     )
 )

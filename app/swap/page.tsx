@@ -34,7 +34,7 @@ function SwapContent() {
                 <div className="text-center">
                     <h1 className="mb-4 text-2xl font-bold">Wrong Network</h1>
                     <p className="mb-4 text-muted-foreground">
-                        Please switch to a supported network to use cmswap
+                        Please switch to a supported network to use junoswap
                     </p>
                     <Button onClick={handleSwitchChain}>Switch Network</Button>
                 </div>

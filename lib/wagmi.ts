@@ -19,11 +19,11 @@ export const kubTestnet = {
     testnet: true,
 } as const
 
-// Supported chains for cmswap
-export const supportedChains = [bsc, bitkub, kubTestnet, jbc, base, worldchain] as const
+// Supported chains for junoswap
+export const supportedChains = [bitkub, bsc, kubTestnet, jbc, base, worldchain] as const
 
-// Default chain for the app (KUB Testnet for swap feature)
-export const defaultChain = kubTestnet
+// Default chain for the app (KUB Mainnet)
+export const defaultChain = bitkub
 
 // Configure RPC URLs
 const rpcUrls = {
@@ -35,7 +35,7 @@ const rpcUrls = {
     [worldchain.id]: 'https://worldchain-mainnet.g.alchemy.com/public',
 }
 
-// Wagmi configuration for cmswap
+// Wagmi configuration for junoswap
 export const wagmiConfig = createConfig({
     chains: supportedChains,
     transports: {

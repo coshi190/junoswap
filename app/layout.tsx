@@ -8,7 +8,7 @@ import { Toaster } from '@/components/ui/sonner'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-    title: 'CMswap - Multi-Chain Web3 Aggregation Platform',
+    title: 'Junoswap - Multi-Chain Web3 Aggregation Platform',
     description:
         'Swap, Bridge, and Launch tokens across multiple blockchains. Best rates on Ethereum, BSC, Polygon, and more.',
     keywords: ['DeFi', 'DEX', 'swap', 'bridge', 'launchpad', 'Web3', 'crypto'],

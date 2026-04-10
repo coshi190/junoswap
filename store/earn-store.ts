@@ -321,7 +321,7 @@ export const useEarnStore = create<EarnStore>()(
                     }),
             }),
             {
-                name: 'cmswap-earn-store',
+                name: 'junoswap-earn-store',
                 partialize: (state) => ({
                     settings: state.settings,
                     miningSettings: state.miningSettings,
@@ -339,7 +339,7 @@ export const useEarnStore = create<EarnStore>()(
                 }),
             }
         ),
-        { name: 'cmswap-earn' }
+        { name: 'junoswap-earn' }
     )
 )
 
