@@ -1,21 +1,19 @@
 'use client'
 
 import { createConfig, EVM } from '@lifi/sdk'
-import type { Client as LifIClient } from '@lifi/sdk/node_modules/viem'
 import { getConnectorClient } from '@wagmi/core'
 import { wagmiConfig } from './wagmi'
 
 /**
  * Get a viem wallet client for the LI.FI SDK to use for executing transactions.
  * This bridges wagmi's connector system with LI.FI's EVM provider.
- *
- * We cast to the LI.FI SDK's bundled viem Client type to bridge the minor
- * type differences between the project's viem version and the SDK's bundled one.
- * At runtime the client object is fully compatible.
+ * Cast to `any` to bridge type differences between the project's viem and
+ * the SDK's bundled viem — at runtime the client object is fully compatible.
  */
 async function getWalletClient() {
     const client = await getConnectorClient(wagmiConfig)
-    return client as unknown as LifIClient
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- bridging wagmi/viem type mismatch with LI.FI SDK's bundled viem
+    return client as any
 }
 
 /**
