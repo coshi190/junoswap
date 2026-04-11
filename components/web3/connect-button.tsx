@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Wallet } from 'lucide-react'
 import { ConnectModal } from './connect-modal'
 import { AccountDropdown } from './account-dropdown'
+import { Jazzicon } from './jazzicon'
 import { formatAddress } from '@/lib/utils'
 import { toastSuccess } from '@/lib/toast'
 
@@ -17,6 +18,11 @@ function AccountInfo({ className = '' }: { className?: string }) {
                 className={`relative flex items-center gap-2 h-8 px-2 rounded-md text-xs font-mono text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors ${className}`}
                 aria-label="Account menu"
             >
+                <Jazzicon
+                    address={address || ''}
+                    size={24}
+                    className="sm:hidden flex-shrink-0 overflow-hidden rounded-full [&>div]:rounded-full"
+                />
                 <span className="hidden sm:inline">
                     {address ? formatAddress(address, 4, 3) : '...'}
                 </span>

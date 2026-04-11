@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Shield, TrendingUp } from 'lucide-react'
+import { Shield, TrendingUp } from 'lucide-react'
 
 export function Hero() {
     return (
@@ -18,16 +18,10 @@ export function Hero() {
                     <p className="mt-6 text-lg leading-8 text-muted-foreground sm:text-xl">
                         Best rates. Any chain. One platform.
                     </p>
-                    <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+                    <div className="mt-10">
                         <Link href="/swap">
                             <Button size="xl" className="group w-full sm:w-auto">
                                 Start Swapping
-                                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                            </Button>
-                        </Link>
-                        <Link href="/bridge">
-                            <Button size="xl" variant="outline" className="w-full sm:w-auto">
-                                Bridge Tokens
                             </Button>
                         </Link>
                     </div>

@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function CTA() {
@@ -27,7 +26,6 @@ export function CTA() {
                                     className="group w-full sm:w-auto btn-primary-glow"
                                 >
                                     Launch App
-                                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                                 </Button>
                             </Link>
                             <Button

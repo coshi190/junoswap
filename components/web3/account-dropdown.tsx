@@ -3,7 +3,7 @@
 import { useDisconnect, useAccount, useBalance } from 'wagmi'
 import { useChainId } from 'wagmi'
 import { getChainMetadata } from '@/lib/wagmi'
-import { formatAddress, getInitials } from '@/lib/utils'
+import { formatAddress } from '@/lib/utils'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,7 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Jazzicon } from './jazzicon'
 import { Copy, ExternalLink, LogOut } from 'lucide-react'
 import { toastSuccess, toastError } from '@/lib/toast'
 import { Separator } from '@/components/ui/separator'
@@ -55,11 +55,11 @@ export function AccountDropdown({ children }: { children: React.ReactNode }) {
                 className="w-64 bg-card/95 backdrop-blur-md border-border/50"
             >
                 <div className="flex items-center gap-2.5 px-3 py-3">
-                    <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary/15 text-primary text-xs font-mono">
-                            {address ? getInitials(address) : '?'}
-                        </AvatarFallback>
-                    </Avatar>
+                    <Jazzicon
+                        address={address || ''}
+                        size={32}
+                        className="flex-shrink-0 overflow-hidden rounded-full [&>div]:rounded-full"
+                    />
                     <div className="flex-1 min-w-0">
                         <div className="font-mono text-sm font-medium truncate">
                             {address ? formatAddress(address) : 'Not connected'}

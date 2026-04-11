@@ -27,57 +27,40 @@ export function Header() {
         { href: '/points', label: 'Points' },
     ]
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex h-16 justify-between items-center px-6">
-                <div className="flex items-center w-[180px]">
-                    <Link href="/" className="flex items-center space-x-2">
-                        <Image src="/favicon.ico" alt="junoswap" width={32} height={32} />
-                        <span className="hidden md:inline text-xl font-bold">Junoswap</span>
-                    </Link>
-                </div>
-                <NavigationMenu className="hidden md:flex flex-1 justify-center">
-                    <NavigationMenuList>
-                        {navLinks.map((link) => {
-                            const isActive = pathname === link.href
-                            return (
-                                <NavigationMenuItem key={link.href}>
-                                    <NavigationMenuLink asChild>
-                                        <Link
-                                            href={link.href}
-                                            className={`px-4 py-2 text-sm font-medium transition-colors ${
-                                                isActive
-                                                    ? 'border-b-2 border-white'
-                                                    : 'text-muted-foreground hover:text-foreground'
-                                            }`}
-                                        >
-                                            {link.label}
-                                        </Link>
-                                    </NavigationMenuLink>
-                                </NavigationMenuItem>
-                            )
-                        })}
-                    </NavigationMenuList>
-                </NavigationMenu>
-                <div className="flex items-center gap-2">
+        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 header-border-glow">
+            <div className="flex h-16 items-center px-4 lg:px-6">
+                {/* Left group: Hamburger (mobile) + Logo + Desktop Nav */}
+                <div className="flex items-center gap-1 md:gap-6 lg:gap-8">
+                    {/* Mobile hamburger - left of logo */}
                     <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="md:hidden">
+                            <Button variant="ghost" size="icon" className="md:hidden -ml-2 mr-1">
                                 <Menu className="h-5 w-5" />
                                 <span className="sr-only">Toggle menu</span>
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="bg-background/95 backdrop-blur">
-                            <nav className="flex flex-col gap-4 mt-8">
+                        <SheetContent
+                            side="left"
+                            className="bg-background/95 backdrop-blur w-[280px] sm:w-[320px]"
+                        >
+                            {/* Drawer header */}
+                            <div className="flex items-center space-x-2 mt-2 mb-6">
+                                <Image src="/favicon.ico" alt="junoswap" width={28} height={28} />
+                                <span className="text-lg font-bold">Junoswap</span>
+                            </div>
+
+                            {/* Nav links */}
+                            <nav className="flex flex-col gap-1">
                                 {navLinks.map((link) => {
                                     const isActive = pathname === link.href
                                     return (
                                         <Link
                                             key={link.href}
                                             href={link.href}
-                                            className={`text-lg font-medium transition-colors border-b-2 pb-1 ${
+                                            className={`flex items-center min-h-[48px] px-4 py-3 text-[15px] font-medium transition-all duration-150 ${
                                                 isActive
-                                                    ? 'text-primary border-primary'
-                                                    : 'text-foreground hover:text-primary border-transparent'
+                                                    ? 'text-white'
+                                                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground border-transparent'
                                             }`}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
@@ -88,6 +71,43 @@ export function Header() {
                             </nav>
                         </SheetContent>
                     </Sheet>
+
+                    {/* Logo */}
+                    <Link href="/" className="flex items-center space-x-2">
+                        <Image src="/favicon.ico" alt="junoswap" width={32} height={32} />
+                        <span className="hidden md:inline text-xl font-bold">Junoswap</span>
+                    </Link>
+
+                    {/* Desktop navigation */}
+                    <NavigationMenu className="hidden md:flex">
+                        <NavigationMenuList className="!justify-start gap-1">
+                            {navLinks.map((link) => {
+                                const isActive = pathname === link.href
+                                return (
+                                    <NavigationMenuItem key={link.href}>
+                                        <NavigationMenuLink asChild>
+                                            <Link
+                                                href={link.href}
+                                                className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out ${
+                                                    isActive
+                                                        ? 'text-foreground'
+                                                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                                                }`}
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    </NavigationMenuItem>
+                                )
+                            })}
+                        </NavigationMenuList>
+                    </NavigationMenu>
+                </div>
+
+                <div className="flex-1" />
+
+                {/* Right controls */}
+                <div className="flex items-center gap-2">
                     <NetworkSwitcher />
                     <ConnectButton />
                 </div>
