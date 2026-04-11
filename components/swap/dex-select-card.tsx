@@ -10,11 +10,20 @@ import { useSwapStore } from '@/store/swap-store'
 import { useMultiDexQuotes } from '@/hooks/useMultiDexQuotes'
 import { DEX_REGISTRY } from '@/types/dex'
 import { getSupportedDexs } from '@/lib/dex-config'
+import { Switch } from '@/components/ui/switch'
 import { ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
 
 export function DexSelectCard() {
     const [expanded, setExpanded] = useState(false)
-    const { selectedDex, setSelectedDex, tokenIn, tokenOut, amountIn, settings } = useSwapStore()
+    const {
+        selectedDex,
+        setSelectedDex,
+        setAutoSelectBestDex,
+        tokenIn,
+        tokenOut,
+        amountIn,
+        settings,
+    } = useSwapStore()
     const chainId = useChainId()
     const supportedDexs = getSupportedDexs(chainId)
     const amountInBigInt = useMemo(() => {
@@ -89,6 +98,27 @@ export function DexSelectCard() {
                             <span className="font-medium">{selectedDexInfo.displayName}</span>
                         </div>
                         <div className="flex items-center gap-2">
+                            <div
+                                className="flex items-center gap-1.5"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <Label
+                                    htmlFor="auto-select"
+                                    className="text-xs text-muted-foreground cursor-pointer"
+                                >
+                                    Auto
+                                </Label>
+                                <Switch
+                                    id="auto-select"
+                                    checked={settings.autoSelectBestDex}
+                                    onCheckedChange={(checked) => {
+                                        setAutoSelectBestDex(checked)
+                                        if (checked && bestQuoteDex) {
+                                            setSelectedDex(bestQuoteDex)
+                                        }
+                                    }}
+                                />
+                            </div>
                             {expanded ? (
                                 <ChevronUp className="h-4 w-4 text-muted-foreground" />
                             ) : (
@@ -108,6 +138,7 @@ export function DexSelectCard() {
                                 <button
                                     key={dex.id}
                                     onClick={() => {
+                                        setAutoSelectBestDex(false)
                                         setSelectedDex(dex.id)
                                         setExpanded(false)
                                     }}

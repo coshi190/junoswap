@@ -93,7 +93,7 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
             return 0n
         }
     }, [debouncedAmountIn, tokenIn])
-    const { dexQuotes, bestRoute, isMultiHop } = useMultiDexQuotes({
+    const { dexQuotes, allRoutes } = useMultiDexQuotes({
         tokenIn,
         tokenOut,
         amountIn: amountInBigInt,
@@ -111,19 +111,22 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
             fee: quoteData?.fee,
         }
     }, [dexQuotes, selectedDex])
+    // Find the best route for the selected DEX (for swap execution and multi-hop display)
+    const selectedDexRoute = useMemo(() => {
+        const routesForDex = allRoutes.filter((r) => r.dexId === selectedDex)
+        return routesForDex[0] ?? null
+    }, [allRoutes, selectedDex])
     const wrapOp = useMemo(() => {
         return getWrapOperation(tokenIn, tokenOut)
     }, [tokenIn, tokenOut])
     const { quote, isLoading: isQuoteLoading, isError, error, fee: quoteFee } = selectedDexQuote
-    const bestQuote = useMemo(() => {
-        if (bestRoute?.quote) {
-            return bestRoute.quote
-        }
+    // Use the selected DEX's quote for display, not the globally best route
+    const effectiveQuote = useMemo(() => {
         return quote
-    }, [bestRoute?.quote, quote])
+    }, [quote])
     const shouldShowError = useMemo(() => {
-        return isError && !bestQuote
-    }, [isError, bestQuote])
+        return isError && !effectiveQuote
+    }, [isError, effectiveQuote])
     const isWrapUnwrap = !!wrapOp
     const wrapOperation = wrapOp
     const fee = quoteFee ?? (isV2Protocol ? 3000 : 3000) // Default to 3000 (0.3%) if not set
@@ -133,10 +136,14 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
 
     useEffect(() => {
         // Only update quote if amountOut actually changed
-        if (bestQuote && tokenOut && bestQuote.amountOut !== prevQuoteAmountOutRef.current) {
-            prevQuoteAmountOutRef.current = bestQuote.amountOut
-            setQuote(bestQuote)
-        } else if (!bestQuote) {
+        if (
+            effectiveQuote &&
+            tokenOut &&
+            effectiveQuote.amountOut !== prevQuoteAmountOutRef.current
+        ) {
+            prevQuoteAmountOutRef.current = effectiveQuote.amountOut
+            setQuote(effectiveQuote)
+        } else if (!effectiveQuote) {
             prevQuoteAmountOutRef.current = null
         }
 
@@ -146,11 +153,11 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
             setIsLoading(isQuoteLoading)
         }
 
-        if (isError && error && !isQuoteLoading && !bestQuote && amountInBigInt > 0n) {
+        if (isError && error && !isQuoteLoading && !effectiveQuote && amountInBigInt > 0n) {
             toastError(error, 'Failed to get quote')
         }
     }, [
-        bestQuote,
+        effectiveQuote,
         isQuoteLoading,
         isError,
         error,
@@ -162,17 +169,17 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
     const displayAmountOut = useMemo(() => {
         if (isQuoteLoading) return '...'
         if (shouldShowError) return '0'
-        if (bestQuote && tokenOut) {
-            return formatUnits(bestQuote.amountOut, tokenOut.decimals)
+        if (effectiveQuote && tokenOut) {
+            return formatUnits(effectiveQuote.amountOut, tokenOut.decimals)
         }
         return '0'
-    }, [bestQuote, isQuoteLoading, shouldShowError, tokenOut])
+    }, [effectiveQuote, isQuoteLoading, shouldShowError, tokenOut])
     const isSameTokenSwap = isSameToken(tokenIn, tokenOut)
     const amountOutMinimum = useMemo(() => {
-        if (!bestQuote || !tokenOut) return 0n
+        if (!effectiveQuote || !tokenOut) return 0n
         const calcFn = isV2Protocol ? calculateMinOutputV2 : calculateMinOutput
-        return calcFn(bestQuote.amountOut, Math.floor(settings.slippage * 100))
-    }, [bestQuote, tokenOut, settings.slippage, isV2Protocol])
+        return calcFn(effectiveQuote.amountOut, Math.floor(settings.slippage * 100))
+    }, [effectiveQuote, tokenOut, settings.slippage, isV2Protocol])
     const {
         needsApproval,
         isApproving,
@@ -198,7 +205,7 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
         slippage: settings.slippage,
         deadlineMinutes: settings.deadlineMinutes,
         fee,
-        route: bestRoute?.route,
+        route: selectedDexRoute?.route,
         skipSimulation: needsApprovalCheck,
     })
     const v2Swap = useUniV2SwapExecution({
@@ -209,7 +216,7 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
         recipient: address ?? '0x0',
         slippage: settings.slippage,
         deadlineMinutes: settings.deadlineMinutes,
-        route: bestRoute?.route,
+        route: selectedDexRoute?.route,
         skipSimulation: needsApprovalCheck,
     })
     const {
@@ -358,7 +365,7 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                     </div>
                 </div>
                 <div className="space-y-4 p-6">
-                    {bestQuote && tokenIn && tokenOut && !isQuoteLoading && (
+                    {effectiveQuote && tokenIn && tokenOut && !isQuoteLoading && (
                         <Card className="bg-muted/50 p-1">
                             <CardContent className="space-y-1 p-3 text-xs">
                                 {isWrapUnwrap && (
@@ -428,16 +435,17 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                                                 {(fee / 10000).toFixed(2)}%
                                             </span>
                                         </div>
-                                        {isMultiHop &&
-                                            bestRoute &&
-                                            bestRoute.route.intermediaryTokens.length > 0 && (
+                                        {selectedDexRoute &&
+                                            selectedDexRoute.route.isMultiHop &&
+                                            selectedDexRoute.route.intermediaryTokens.length >
+                                                0 && (
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-muted-foreground">
                                                         Route
                                                     </span>
                                                     <span className="font-medium flex items-center gap-1">
                                                         <span className="text-xs uppercase">
-                                                            {bestRoute.dexId}
+                                                            {selectedDexRoute.dexId}
                                                         </span>
                                                         <span className="text-muted-foreground">
                                                             •
@@ -446,7 +454,7 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                                                         <span className="text-muted-foreground">
                                                             →
                                                         </span>
-                                                        {bestRoute.route.intermediaryTokens
+                                                        {selectedDexRoute.route.intermediaryTokens
                                                             .map((t) => t.symbol)
                                                             .join(' → ')}
                                                         <span className="text-muted-foreground">

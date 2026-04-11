@@ -32,6 +32,7 @@ export interface UseMultiDexQuotesResult {
     priceDifferences: Record<DEXType, number | null>
     bestRoute: RouteQuote | null
     isMultiHop: boolean
+    allRoutes: RouteQuote[]
 }
 
 export function useMultiDexQuotes({
@@ -205,5 +206,6 @@ export function useMultiDexQuotes({
         priceDifferences,
         bestRoute: routing.bestRoute,
         isMultiHop: routing.bestRoute?.route.isMultiHop ?? false,
+        allRoutes: routing.allRoutes,
     }
 }
