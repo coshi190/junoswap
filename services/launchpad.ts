@@ -113,6 +113,19 @@ export function formatTokenAmount(weiValue: bigint): string {
 }
 
 /**
+ * Format a number compactly with zero decimals
+ */
+export function formatCompact(num: number): string {
+    if (num === 0) return '0'
+    if (num < 0.01) return '<0.01'
+    if (num < 1) return num.toFixed(2)
+    if (num < 1000) return num.toFixed(0)
+    if (num < 1000000) return `${(num / 1000).toFixed(0)}K`
+    if (num < 1000000000) return `${(num / 1000000).toFixed(0)}M`
+    return `${(num / 1000000000).toFixed(0)}B`
+}
+
+/**
  * Get the createToken contract call config
  */
 export function getCreateTokenConfig(form: {

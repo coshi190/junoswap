@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo } from 'react'
-import { useSimulateContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useSimulateContract, useWriteContract, usePublicClient } from 'wagmi'
+import { useQuery } from '@tanstack/react-query'
 import type { Address } from 'viem'
 import {
     PUMP_CORE_NATIVE_ADDRESS,
@@ -42,6 +43,7 @@ export function useBondingCurveSell({
     enabled = true,
 }: UseBondingCurveSellParams): UseBondingCurveSellResult {
     const { settings } = useLaunchpadStore()
+    const publicClient = usePublicClient({ chainId: PUMP_CORE_NATIVE_CHAIN_ID })
 
     const expectedOut = useMemo(
         () => calculateSellOutput(tokenAmount, nativeReserve, tokenReserve, virtualAmount),
@@ -64,12 +66,34 @@ export function useBondingCurveSell({
         },
     })
 
-    const { data: hash, writeContract, isPending: isExecuting, isError, error } = useWriteContract()
+    const {
+        data: hash,
+        writeContract,
+        isPending: isExecuting,
+        isError: isWriteError,
+        error: writeError,
+    } = useWriteContract()
 
-    const { isSuccess, isPending: isConfirming } = useWaitForTransactionReceipt({
-        hash,
-        chainId: PUMP_CORE_NATIVE_CHAIN_ID,
+    // Poll for receipt manually (more reliable than useWaitForTransactionReceipt on custom chains)
+    const { data: receipt } = useQuery({
+        queryKey: ['sell-receipt', hash],
+        queryFn: async () => {
+            if (!hash || !publicClient) return null
+            return publicClient.getTransactionReceipt({ hash })
+        },
+        enabled: !!hash && !!publicClient,
+        refetchInterval: (query) => {
+            if (query.state.data) return false
+            return 2000
+        },
     })
+
+    const isConfirming = !!hash && !receipt
+    const isSuccess = !!receipt && receipt.status === 'success'
+    const isError = isWriteError || (!!receipt && receipt.status === 'reverted')
+    const error =
+        writeError ||
+        (isError && receipt?.status === 'reverted' ? new Error('Transaction reverted') : null)
 
     const sell = () => {
         if (!simulationData?.request) return

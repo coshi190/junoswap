@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useAccount, useBalance } from 'wagmi'
+import { useAccount, useBalance, useReadContract } from 'wagmi'
 import { parseUnits, formatEther, parseEther } from 'viem'
 import type { Address } from 'viem'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,21 +13,43 @@ import { useTokenReserves } from '@/hooks/useTokenReserves'
 import { useBondingCurveBuy } from '@/hooks/useBondingCurveBuy'
 import { useBondingCurveSell } from '@/hooks/useBondingCurveSell'
 import { useTokenApproval } from '@/hooks/useTokenApproval'
-import { useReadContract } from 'wagmi'
 import { ERC20_ABI } from '@/lib/abis/erc20'
-import { PUMP_CORE_NATIVE_ADDRESS } from '@/lib/abis/pump-core-native'
-import { isValidNumberInput } from '@/lib/utils'
+import { PUMP_CORE_NATIVE_ADDRESS, PUMP_CORE_NATIVE_CHAIN_ID } from '@/lib/abis/pump-core-native'
+import { isValidNumberInput, cn } from '@/lib/utils'
 import { formatKub, formatTokenAmount } from '@/services/launchpad'
 import { toastSuccess, toastError } from '@/lib/toast'
 import { getChainMetadata } from '@/lib/wagmi'
-import { PUMP_CORE_NATIVE_CHAIN_ID } from '@/lib/abis/pump-core-native'
 import { ConnectModal } from '@/components/web3/connect-modal'
+import { SettingsDialog } from '@/components/swap/settings-dialog'
+import { useLaunchpadStore } from '@/store/launchpad-store'
 
 interface TokenTradeCardProps {
     tokenAddr: Address
     tokenSymbol?: string
     tokenDecimals?: number
     isGraduated: boolean
+}
+
+function PercentButtons({ onSelect }: { onSelect: (pct: number) => void }) {
+    const presets = [
+        { label: '25%', value: 25 },
+        { label: '50%', value: 50 },
+        { label: '75%', value: 75 },
+        { label: 'MAX', value: 100 },
+    ]
+    return (
+        <div className="flex gap-1.5">
+            {presets.map((p) => (
+                <button
+                    key={p.value}
+                    onClick={() => onSelect(p.value)}
+                    className="flex-1 rounded-md bg-muted/60 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors border border-transparent hover:border-border hover:bg-accent hover:text-foreground"
+                >
+                    {p.label}
+                </button>
+            ))}
+        </div>
+    )
 }
 
 export function TokenTradeCard({
@@ -41,6 +63,7 @@ export function TokenTradeCard({
     const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
     const [buyAmount, setBuyAmount] = useState('')
     const [sellAmount, setSellAmount] = useState('')
+    const { settings, setSlippageBps } = useLaunchpadStore()
 
     const {
         nativeReserve,
@@ -160,7 +183,7 @@ export function TokenTradeCard({
         refetchReserves()
         refetchNative()
         refetchTokens()
-    }, [isBuySuccess, buyHash, refetchReserves, refetchNative, refetchTokens])
+    }, [isBuySuccess, buyHash])
 
     // Handle sell success
     useEffect(() => {
@@ -176,7 +199,7 @@ export function TokenTradeCard({
         refetchReserves()
         refetchNative()
         refetchTokens()
-    }, [isSellSuccess, sellHash, refetchReserves, refetchNative, refetchTokens])
+    }, [isSellSuccess, sellHash])
 
     // Handle errors
     useEffect(() => {
@@ -193,6 +216,19 @@ export function TokenTradeCard({
 
     const handleSellInputChange = (value: string) => {
         if (isValidNumberInput(value)) setSellAmount(value)
+    }
+
+    const handleBuyPercent = (pct: number) => {
+        if (!nativeBalance?.value) return
+        const amount = (nativeBalance.value * BigInt(pct)) / 100n
+        setBuyAmount(formatEther(amount))
+    }
+
+    const handleSellPercent = (pct: number) => {
+        if (!tokenBalance) return
+        const balance = tokenBalance as bigint
+        const amount = (balance * BigInt(pct)) / 100n
+        setSellAmount(formatEther(amount))
     }
 
     const handleBuy = () => {
@@ -218,10 +254,10 @@ export function TokenTradeCard({
     if (isGraduated) {
         return (
             <Card>
-                <CardContent className="p-4">
-                    <div className="rounded-lg bg-green-500/10 p-4 text-center">
-                        <p className="font-semibold text-green-500">Token Graduated!</p>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                <CardContent className="p-6">
+                    <div className="rounded-lg bg-green-500/10 p-6 text-center">
+                        <p className="text-lg font-semibold text-green-500">Token Graduated!</p>
+                        <p className="mt-2 text-sm text-muted-foreground">
                             This token is now trading on Uniswap V3
                         </p>
                     </div>
@@ -233,7 +269,7 @@ export function TokenTradeCard({
     return (
         <>
             <Card>
-                <CardContent className="p-4">
+                <CardContent className="p-6">
                     <Tabs
                         value={activeTab}
                         onValueChange={(v) => setActiveTab(v as 'buy' | 'sell')}
@@ -243,8 +279,18 @@ export function TokenTradeCard({
                             <TabsTrigger value="sell">Sell</TabsTrigger>
                         </TabsList>
 
+                        {/* Slippage settings */}
+                        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                            <span>Slippage: {(settings.slippageBps / 100).toFixed(1)}%</span>
+                            <SettingsDialog
+                                currentSlippage={settings.slippageBps / 100}
+                                currentDeadlineMinutes={20}
+                                onSave={(slippage) => setSlippageBps(Math.round(slippage * 100))}
+                            />
+                        </div>
+
                         {/* Buy Tab */}
-                        <TabsContent value="buy" className="mt-4 space-y-3">
+                        <TabsContent value="buy" className="mt-4 space-y-4">
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <Label>Amount (KUB)</Label>
@@ -260,38 +306,53 @@ export function TokenTradeCard({
                                         {nativeBalance ? formatKub(nativeBalance.value) : '0'} KUB
                                     </button>
                                 </div>
-                                <Input
-                                    placeholder="0.0"
-                                    value={buyAmount}
-                                    onChange={(e) => handleBuyInputChange(e.target.value)}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        placeholder="0.0"
+                                        value={buyAmount}
+                                        onChange={(e) => handleBuyInputChange(e.target.value)}
+                                        className="h-14 bg-muted/50 border-0 text-lg font-semibold pr-16 focus-visible:ring-1 focus-visible:ring-primary/30"
+                                    />
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                                        KUB
+                                    </div>
+                                </div>
+                                <PercentButtons onSelect={handleBuyPercent} />
                             </div>
 
                             {buyAmountWei > 0n && (
-                                <div className="space-y-1 rounded-lg bg-muted p-3 text-sm">
+                                <div className="space-y-2 rounded-lg bg-muted p-4 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">
                                             You receive (est.)
                                         </span>
-                                        <span>
+                                        <span className="font-medium">
                                             {formatTokenAmount(buyExpectedOut)} {tokenSymbol}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Min received</span>
-                                        <span>
+                                        <span className="font-medium">
                                             {formatTokenAmount(minTokenOut)} {tokenSymbol}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Fee</span>
-                                        <span>1%</span>
+                                        <span className="font-medium">1%</span>
                                     </div>
                                 </div>
                             )}
 
                             <Button
-                                className="w-full"
+                                size="xl"
+                                className={cn(
+                                    'w-full bg-green-600 text-white hover:bg-green-700 active:bg-green-800',
+                                    (isBuyPreparing ||
+                                        isBuyExecuting ||
+                                        isBuyConfirming ||
+                                        buyAmountWei === 0n) &&
+                                        'opacity-50 cursor-not-allowed'
+                                )}
                                 onClick={handleBuy}
                                 disabled={
                                     isBuyPreparing ||
@@ -309,7 +370,7 @@ export function TokenTradeCard({
                         </TabsContent>
 
                         {/* Sell Tab */}
-                        <TabsContent value="sell" className="mt-4 space-y-3">
+                        <TabsContent value="sell" className="mt-4 space-y-4">
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <Label>Amount ({tokenSymbol})</Label>
@@ -328,34 +389,55 @@ export function TokenTradeCard({
                                         {tokenSymbol}
                                     </button>
                                 </div>
-                                <Input
-                                    placeholder="0.0"
-                                    value={sellAmount}
-                                    onChange={(e) => handleSellInputChange(e.target.value)}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        placeholder="0.0"
+                                        value={sellAmount}
+                                        onChange={(e) => handleSellInputChange(e.target.value)}
+                                        className="h-14 bg-muted/50 border-0 text-lg font-semibold pr-20 focus-visible:ring-1 focus-visible:ring-primary/30"
+                                    />
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                                        {tokenSymbol}
+                                    </div>
+                                </div>
+                                <PercentButtons onSelect={handleSellPercent} />
                             </div>
 
                             {sellAmountWei > 0n && (
-                                <div className="space-y-1 rounded-lg bg-muted p-3 text-sm">
+                                <div className="space-y-2 rounded-lg bg-muted p-4 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">
                                             You receive (est.)
                                         </span>
-                                        <span>{formatKub(sellExpectedOut)} KUB</span>
+                                        <span className="font-medium">
+                                            {formatKub(sellExpectedOut)} KUB
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Min received</span>
-                                        <span>{formatKub(minNativeOut)} KUB</span>
+                                        <span className="font-medium">
+                                            {formatKub(minNativeOut)} KUB
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Fee</span>
-                                        <span>1%</span>
+                                        <span className="font-medium">1%</span>
                                     </div>
                                 </div>
                             )}
 
                             <Button
-                                className="w-full"
+                                size="xl"
+                                className={cn(
+                                    'w-full bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
+                                    (isSellPreparing ||
+                                        isSellExecuting ||
+                                        isSellConfirming ||
+                                        isApprovingSell ||
+                                        isConfirmingApproval ||
+                                        sellAmountWei === 0n) &&
+                                        'opacity-50 cursor-not-allowed'
+                                )}
                                 onClick={handleSell}
                                 disabled={
                                     isSellPreparing ||
@@ -365,7 +447,6 @@ export function TokenTradeCard({
                                     isConfirmingApproval ||
                                     sellAmountWei === 0n
                                 }
-                                variant={needsSellApproval ? 'outline' : 'default'}
                             >
                                 {isApprovingSell || isConfirmingApproval
                                     ? 'Approving...'

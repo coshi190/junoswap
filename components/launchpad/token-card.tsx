@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatAddress } from '@/lib/utils'
+import { formatCompact } from '@/services/launchpad'
 import type { LaunchToken } from '@/types/launchpad'
 import { GraduationProgress } from './graduation-progress'
 
@@ -80,7 +81,9 @@ export function TokenCard({
                                 {marketCap && (
                                     <div className="mb-1.5 flex items-center justify-between text-sm">
                                         <span className="text-muted-foreground">MC</span>
-                                        <span className="font-medium">{marketCap} KUB</span>
+                                        <span className="font-medium">
+                                            {formatCompact(parseFloat(marketCap))} KUB
+                                        </span>
                                     </div>
                                 )}
                                 <GraduationProgress

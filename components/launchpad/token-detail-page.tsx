@@ -7,12 +7,18 @@ import { ERC20_ABI } from '@/lib/abis/erc20'
 import { PUMP_CORE_NATIVE_CHAIN_ID } from '@/lib/abis/pump-core-native'
 import { useTokenReserves } from '@/hooks/useTokenReserves'
 import { useTokenList } from '@/hooks/useTokenList'
-import { calculateMarketCap, formatKub, formatTokenAmount } from '@/services/launchpad'
-import { formatAddress } from '@/lib/utils'
-import { GraduationProgress } from './graduation-progress'
+import { useTokenPrice } from '@/hooks/useTokenPrice'
+import { calculateMarketCap } from '@/services/launchpad'
+import { formatAddress, cn } from '@/lib/utils'
 import { TokenTradeCard } from './token-trade-card'
-import { Loader2, Globe, Twitter, MessageCircle, ArrowLeft } from 'lucide-react'
+import { TokenChartWrapper } from './token-chart-wrapper'
+import { TokenStats } from './token-stats'
+import { RecentTrades } from './recent-trades'
+import { TokenDetailSkeleton } from './token-detail-skeleton'
+import { Badge } from '@/components/ui/badge'
+import { Globe, Twitter, MessageCircle, ArrowLeft, Copy, Check } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 interface TokenDetailPageProps {
     tokenAddr: Address
@@ -54,6 +60,9 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
     const { tokens: allTokens } = useTokenList()
     const tokenInfo = allTokens.find((t) => t.address.toLowerCase() === tokenAddr.toLowerCase())
 
+    // Token price
+    const { currentPrice, priceChangePercent24h, isPositive } = useTokenPrice(tokenAddr)
+
     const totalSupply = parseEther('1000000000') // 1 billion with 18 decimals
     const marketCap = calculateMarketCap(nativeReserve, tokenReserve, totalSupply)
 
@@ -61,16 +70,20 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
     const name = (tokenName as string) || 'Unknown Token'
     const decimals = (tokenDecimals as number) || 18
 
+    const [copied, setCopied] = useState(false)
+
+    const copyAddress = () => {
+        navigator.clipboard.writeText(tokenAddr)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+    }
+
     if (isLoadingReserves) {
-        return (
-            <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-        )
+        return <TokenDetailSkeleton />
     }
 
     return (
-        <div className="mx-auto max-w-2xl space-y-4">
+        <div className="mx-auto max-w-6xl space-y-4">
             {/* Back button */}
             <Link
                 href="/launchpad"
@@ -80,121 +93,155 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
                 Back to Launchpad
             </Link>
 
-            {/* Token header */}
-            <div className="flex items-start gap-4">
-                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-muted">
-                    {tokenInfo?.logo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={tokenInfo.logo}
-                            alt={symbol}
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                                ;(e.target as HTMLImageElement).style.display = 'none'
-                            }}
-                        />
+            {/* Price header — full width */}
+            <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+                {/* Token identity */}
+                <div className="flex items-center gap-3">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-muted">
+                        {tokenInfo?.logo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                src={tokenInfo.logo}
+                                alt={symbol}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    ;(e.target as HTMLImageElement).style.display = 'none'
+                                }}
+                            />
+                        ) : (
+                            <div className="flex h-full w-full items-center justify-center text-base font-bold text-muted-foreground">
+                                {symbol.slice(0, 2)}
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-bold">{name}</h1>
+                            <span className="text-sm text-muted-foreground">${symbol}</span>
+                            {isGraduated ? (
+                                <Badge className="bg-green-600 text-white text-xs">Graduated</Badge>
+                            ) : (
+                                <Badge variant="secondary" className="text-xs">
+                                    Bonding Curve
+                                </Badge>
+                            )}
+                        </div>
+                        <button
+                            onClick={copyAddress}
+                            className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <span className="font-mono">{formatAddress(tokenAddr)}</span>
+                            {copied ? (
+                                <Check className="h-3 w-3 text-green-400" />
+                            ) : (
+                                <Copy className="h-3 w-3" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Price display */}
+                <div className="flex items-baseline gap-3">
+                    {currentPrice !== null ? (
+                        <span className="text-3xl font-bold tabular-nums tracking-tight">
+                            {currentPrice < 0.0001
+                                ? '<0.0001'
+                                : currentPrice < 1
+                                  ? currentPrice.toFixed(6)
+                                  : currentPrice.toFixed(4)}{' '}
+                            KUB
+                        </span>
                     ) : (
-                        <div className="flex h-full w-full items-center justify-center text-lg font-bold text-muted-foreground">
-                            {symbol.slice(0, 2)}
+                        <span className="text-3xl font-bold text-muted-foreground">--</span>
+                    )}
+                    {priceChangePercent24h !== null && (
+                        <span
+                            className={cn(
+                                'inline-flex items-center rounded-md px-1.5 py-0.5 text-sm font-semibold tabular-nums',
+                                isPositive
+                                    ? 'bg-emerald-500/15 text-emerald-400'
+                                    : 'bg-red-500/15 text-red-400'
+                            )}
+                        >
+                            {isPositive ? '+' : ''}
+                            {priceChangePercent24h.toFixed(2)}%
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            {/* Two-column grid */}
+            <div className="grid gap-6 lg:grid-cols-12">
+                {/* Left column — chart, stats, trades */}
+                <div className="space-y-4 lg:col-span-8">
+                    {/* Inline market stats */}
+                    <TokenStats
+                        marketCap={marketCap}
+                        nativeReserve={nativeReserve}
+                        tokenReserve={tokenReserve}
+                        tokenSymbol={symbol}
+                        isGraduated={isGraduated}
+                        graduationAmount={graduationAmount}
+                    />
+
+                    {/* Chart */}
+                    <TokenChartWrapper tokenAddr={tokenAddr} />
+
+                    {/* Recent trades */}
+                    <RecentTrades tokenAddr={tokenAddr} tokenSymbol={symbol} />
+
+                    {/* Description & Social links */}
+                    {tokenInfo?.description && (
+                        <p className="text-sm text-muted-foreground">{tokenInfo.description}</p>
+                    )}
+                    {(tokenInfo?.link1 || tokenInfo?.link2 || tokenInfo?.link3) && (
+                        <div className="flex gap-2">
+                            {tokenInfo?.link1 && (
+                                <a
+                                    href={tokenInfo.link1}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                >
+                                    <Globe className="h-4 w-4" />
+                                </a>
+                            )}
+                            {tokenInfo?.link2 && (
+                                <a
+                                    href={tokenInfo.link2}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                >
+                                    <Twitter className="h-4 w-4" />
+                                </a>
+                            )}
+                            {tokenInfo?.link3 && (
+                                <a
+                                    href={tokenInfo.link3}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                >
+                                    <MessageCircle className="h-4 w-4" />
+                                </a>
+                            )}
                         </div>
                     )}
                 </div>
-                <div className="min-w-0 flex-1">
-                    <h1 className="text-2xl font-bold">{name}</h1>
-                    <p className="text-sm text-muted-foreground">${symbol}</p>
-                    {tokenInfo && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                            Created by {formatAddress(tokenInfo.creator)}
-                        </p>
-                    )}
-                </div>
-            </div>
 
-            {/* Description */}
-            {tokenInfo?.description && (
-                <p className="text-sm text-muted-foreground">{tokenInfo.description}</p>
-            )}
-
-            {/* Social links */}
-            {(tokenInfo?.link1 || tokenInfo?.link2 || tokenInfo?.link3) && (
-                <div className="flex gap-3">
-                    {tokenInfo?.link1 && (
-                        <a
-                            href={tokenInfo.link1}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground"
-                        >
-                            <Globe className="h-4 w-4" />
-                        </a>
-                    )}
-                    {tokenInfo?.link2 && (
-                        <a
-                            href={tokenInfo.link2}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground"
-                        >
-                            <Twitter className="h-4 w-4" />
-                        </a>
-                    )}
-                    {tokenInfo?.link3 && (
-                        <a
-                            href={tokenInfo.link3}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground"
-                        >
-                            <MessageCircle className="h-4 w-4" />
-                        </a>
-                    )}
-                </div>
-            )}
-
-            {/* Market info */}
-            <div className="rounded-lg border p-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p className="text-muted-foreground">Market Cap</p>
-                        <p className="font-semibold">{marketCap} KUB</p>
-                    </div>
-                    <div>
-                        <p className="text-muted-foreground">KUB Reserve</p>
-                        <p className="font-semibold">{formatKub(nativeReserve)} KUB</p>
-                    </div>
-                    <div>
-                        <p className="text-muted-foreground">Token Reserve</p>
-                        <p className="font-semibold">
-                            {formatTokenAmount(tokenReserve)} {symbol}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-muted-foreground">Status</p>
-                        <p className="font-semibold">
-                            {isGraduated ? 'Graduated' : 'Bonding Curve'}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Graduation progress */}
-                {!isGraduated && graduationAmount > 0n && (
-                    <div className="mt-4">
-                        <GraduationProgress
-                            nativeReserve={nativeReserve}
-                            graduationAmount={graduationAmount}
+                {/* Right column — sticky trade panel */}
+                <div className="lg:col-span-4">
+                    <div className="lg:sticky lg:top-4">
+                        <TokenTradeCard
+                            tokenAddr={tokenAddr}
+                            tokenSymbol={symbol}
+                            tokenDecimals={decimals}
                             isGraduated={isGraduated}
                         />
                     </div>
-                )}
+                </div>
             </div>
-
-            {/* Trading interface */}
-            <TokenTradeCard
-                tokenAddr={tokenAddr}
-                tokenSymbol={symbol}
-                tokenDecimals={decimals}
-                isGraduated={isGraduated}
-            />
         </div>
     )
 }

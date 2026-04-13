@@ -27,9 +27,10 @@ contract PumpCoreNative {
     event Swap(
         address indexed sender,
         bool indexed isBuy,
+        address indexed tokenAddr,
         uint256 amountIn,
         uint256 amountOut,
-        uint256 reserveIn, 
+        uint256 reserveIn,
         uint256 reserveOut
     );
     event Creation(
@@ -191,6 +192,7 @@ contract PumpCoreNative {
         emit Swap(
             msg.sender,
             true,
+            _tokenAddr,
             amountInAfterFee,
             amountOut,
             pumpReserve[_tokenAddr].native,
@@ -225,6 +227,7 @@ contract PumpCoreNative {
         emit Swap(
             msg.sender,
             false,
+            _tokenAddr,
             amountInAfterFee,
             amountOut,
             pumpReserve[_tokenAddr].token,

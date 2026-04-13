@@ -1,4 +1,4 @@
-export const PUMP_CORE_NATIVE_ADDRESS = '0x5d53f6bb0ad4ca52df9034d84861038400191adb' as const
+export const PUMP_CORE_NATIVE_ADDRESS = '0x77e5D3fC554e30aceFd5322ca65beE15ee6E39a9' as const
 
 export const PUMP_CORE_NATIVE_CHAIN_ID = 25925
 
@@ -129,6 +129,7 @@ export const PUMP_CORE_NATIVE_ABI = [
         inputs: [
             { name: 'sender', type: 'address', indexed: true },
             { name: 'isBuy', type: 'bool', indexed: true },
+            { name: 'tokenAddr', type: 'address', indexed: true },
             { name: 'amountIn', type: 'uint256', indexed: false },
             { name: 'amountOut', type: 'uint256', indexed: false },
             { name: 'reserveIn', type: 'uint256', indexed: false },
