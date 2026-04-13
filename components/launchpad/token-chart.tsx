@@ -1,7 +1,14 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
-import { createChart, CandlestickSeries, HistogramSeries, ColorType } from 'lightweight-charts'
+import { useRef, useEffect, useState } from 'react'
+import {
+    createChart,
+    CandlestickSeries,
+    HistogramSeries,
+    ColorType,
+    CrosshairMode,
+    LineStyle,
+} from 'lightweight-charts'
 import type {
     IChartApi,
     ISeriesApi,
@@ -11,12 +18,33 @@ import type {
 } from 'lightweight-charts'
 import type { Address } from 'viem'
 import { useTokenPriceHistory, TIMEFRAMES } from '@/hooks/useTokenPriceHistory'
+import type { ChartMode } from '@/types/chart'
 import { cn } from '@/lib/utils'
-import { BarChart3 } from 'lucide-react'
+import { BarChart3, TrendingUp, Maximize2 } from 'lucide-react'
 
 interface TokenChartProps {
     tokenAddr: Address
     className?: string
+}
+
+function formatPrice(value: number): string {
+    if (value < 0.0001) return '<0.0001'
+    if (value < 1) return value.toFixed(6)
+    if (value < 100) return value.toFixed(4)
+    return value.toFixed(2)
+}
+
+function formatMcap(value: number): string {
+    if (value < 0.01) return '<0.01'
+    if (value < 1) return value.toFixed(2)
+    if (value < 1000) return value.toFixed(2)
+    if (value < 1_000_000) return `${(value / 1_000).toFixed(2)}K`
+    if (value < 1_000_000_000) return `${(value / 1_000_000).toFixed(2)}M`
+    return `${(value / 1_000_000_000).toFixed(2)}B`
+}
+
+function formatChartValue(value: number, mode: ChartMode): string {
+    return mode === 'mcap' ? formatMcap(value) : formatPrice(value)
 }
 
 export function TokenChart({ tokenAddr, className }: TokenChartProps) {
@@ -28,7 +56,19 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
         null
     )
 
-    const { data, isLoading, timeframe, setTimeframe } = useTokenPriceHistory(tokenAddr)
+    const { data, isLoading, timeframe, setTimeframe, chartMode, setChartMode } =
+        useTokenPriceHistory(tokenAddr)
+
+    // OHLCV overlay state
+    const [ohlcvData, setOhlcvData] = useState<{
+        open: number
+        high: number
+        low: number
+        close: number
+        volume: number
+        change: number
+    } | null>(null)
+    const lastCandleRef = useRef<typeof ohlcvData>(null)
 
     // Initialize chart
     useEffect(() => {
@@ -36,40 +76,101 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
 
         const chart = createChart(chartContainerRef.current, {
             layout: {
-                background: { type: ColorType.Solid, color: 'transparent' },
-                textColor: 'hsl(220, 8%, 55%)',
+                background: { type: ColorType.Solid, color: 'hsl(232, 14%, 4%)' },
+                textColor: 'hsl(220, 8%, 40%)',
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 11,
             },
             grid: {
-                vertLines: { color: 'hsl(228, 12%, 12%)' },
-                horzLines: { color: 'hsl(228, 12%, 12%)' },
+                vertLines: {
+                    color: 'hsl(228, 12%, 9%)',
+                    style: LineStyle.SparseDotted,
+                },
+                horzLines: {
+                    color: 'hsl(228, 12%, 9%)',
+                    style: LineStyle.SparseDotted,
+                },
+            },
+            crosshair: {
+                mode: CrosshairMode.Magnet,
+                vertLine: {
+                    color: 'hsl(228, 12%, 25%)',
+                    width: 1,
+                    style: LineStyle.Dashed,
+                    labelVisible: true,
+                    labelBackgroundColor: 'hsl(232, 14%, 14%)',
+                },
+                horzLine: {
+                    color: 'hsl(228, 12%, 25%)',
+                    width: 1,
+                    style: LineStyle.Dashed,
+                    labelVisible: true,
+                    labelBackgroundColor: 'hsl(232, 14%, 14%)',
+                },
             },
             rightPriceScale: {
-                borderColor: 'hsl(228, 12%, 14%)',
+                borderColor: 'hsl(228, 12%, 10%)',
+                scaleMargins: { top: 0.05, bottom: 0.25 },
             },
             timeScale: {
-                borderColor: 'hsl(228, 12%, 14%)',
+                borderColor: 'hsl(228, 12%, 10%)',
                 timeVisible: true,
                 secondsVisible: false,
+                rightOffset: 5,
+                barSpacing: 8,
+                minBarSpacing: 2,
             },
         })
 
         const candleSeries = chart.addSeries(CandlestickSeries, {
             upColor: 'hsl(153, 80%, 45%)',
             downColor: 'hsl(0, 72%, 42%)',
-            borderUpColor: 'hsl(153, 80%, 45%)',
-            borderDownColor: 'hsl(0, 72%, 42%)',
-            wickUpColor: 'hsl(153, 80%, 45%)',
-            wickDownColor: 'hsl(0, 72%, 42%)',
+            borderUpColor: 'hsl(153, 80%, 55%)',
+            borderDownColor: 'hsl(0, 72%, 50%)',
+            wickUpColor: 'hsl(153, 60%, 40%)',
+            wickDownColor: 'hsl(0, 60%, 38%)',
+            lastValueVisible: false,
+            priceLineVisible: false,
         })
 
         const volumeSeries = chart.addSeries(HistogramSeries, {
             priceFormat: { type: 'volume' },
             priceScaleId: 'volume',
+            lastValueVisible: false,
+            priceLineVisible: false,
         })
 
         chart.priceScale('volume').applyOptions({
-            scaleMargins: { top: 0.8, bottom: 0 },
+            scaleMargins: { top: 0.75, bottom: 0 },
         })
+
+        // Subscribe to crosshair move for OHLCV overlay
+        const crosshairHandler = (
+            param: Parameters<Parameters<typeof chart.subscribeCrosshairMove>[0]>[0]
+        ) => {
+            if (!param.time || !param.point) {
+                setOhlcvData(lastCandleRef.current)
+                return
+            }
+
+            const candleData = param.seriesData.get(candleSeries)
+            if (candleData && 'open' in candleData) {
+                const ohlcv = candleData as {
+                    open: number
+                    high: number
+                    low: number
+                    close: number
+                }
+                const volData = param.seriesData.get(volumeSeries)
+                const volume =
+                    volData && 'value' in volData ? (volData as { value: number }).value : 0
+                const change =
+                    ohlcv.open !== 0 ? ((ohlcv.close - ohlcv.open) / ohlcv.open) * 100 : 0
+
+                setOhlcvData({ ...ohlcv, volume, change })
+            }
+        }
+        chart.subscribeCrosshairMove(crosshairHandler)
 
         chartRef.current = chart
         candleSeriesRef.current = candleSeries
@@ -85,6 +186,7 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
         resizeObserver.observe(chartContainerRef.current)
 
         return () => {
+            chart.unsubscribeCrosshairMove(crosshairHandler)
             resizeObserver.disconnect()
             chart.remove()
             chartRef.current = null
@@ -112,7 +214,7 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
             data.map((d) => ({
                 time: d.time as LWTime,
                 value: d.volume,
-                color: d.close >= d.open ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)',
+                color: d.close >= d.open ? 'rgba(34, 197, 94, 0.25)' : 'rgba(239, 68, 68, 0.25)',
             })) as LWHistogramData<LWTime>[]
         )
 
@@ -133,42 +235,177 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
                 axisLabelVisible: true,
                 title: '',
             })
+
+            // Update OHLCV overlay fallback
+            lastCandleRef.current = {
+                open: lastCandle.open,
+                high: lastCandle.high,
+                low: lastCandle.low,
+                close: lastCandle.close,
+                volume: lastCandle.volume,
+                change:
+                    lastCandle.open !== 0
+                        ? ((lastCandle.close - lastCandle.open) / lastCandle.open) * 100
+                        : 0,
+            }
+            setOhlcvData(lastCandleRef.current)
         }
 
         chartRef.current?.timeScale().fitContent()
     }, [data])
 
     return (
-        <div className={cn('relative rounded-lg border', className)}>
-            {/* Timeframe selector */}
-            <div className="flex items-center gap-1 border-b px-3 py-2">
-                {TIMEFRAMES.map((tf) => (
+        <div
+            className={cn(
+                'relative rounded-lg border border-border/60 bg-[hsl(232,14%,4%)]',
+                className
+            )}
+        >
+            {/* Enhanced toolbar */}
+            <div className="flex min-h-11 flex-wrap items-center gap-1.5 border-b border-border/50 px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-0">
+                {/* Chart type icons */}
+                <div className="flex items-center gap-0.5">
+                    <button className="flex h-7 w-7 items-center justify-center rounded bg-accent text-foreground">
+                        <BarChart3 className="h-3.5 w-3.5" />
+                    </button>
+                    <button className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground/40 hover:text-muted-foreground">
+                        <TrendingUp className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+
+                <div className="mx-0.5 h-5 w-px bg-border/50" />
+
+                {/* Mcap / Price toggle */}
+                <div className="flex items-center gap-1">
                     <button
-                        key={tf}
-                        onClick={() => setTimeframe(tf)}
+                        onClick={() => setChartMode('mcap')}
                         className={cn(
-                            'rounded px-2.5 py-1 text-xs font-medium transition-colors',
-                            timeframe === tf
-                                ? 'bg-primary/15 text-primary font-semibold'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                            'rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors',
+                            chartMode === 'mcap'
+                                ? 'bg-blue-500/20 text-blue-400'
+                                : 'text-muted-foreground/40 hover:text-muted-foreground'
                         )}
                     >
-                        {tf}
+                        Mcap
                     </button>
-                ))}
-                {isLoading && (
-                    <span className="ml-auto text-xs text-muted-foreground animate-pulse">
-                        Loading...
-                    </span>
-                )}
+                    <button
+                        onClick={() => setChartMode('price')}
+                        className={cn(
+                            'rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors',
+                            chartMode === 'price'
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : 'text-muted-foreground/40 hover:text-muted-foreground'
+                        )}
+                    >
+                        Price
+                    </button>
+                </div>
+
+                <div className="mx-0.5 h-5 w-px bg-border/50" />
+
+                {/* Timeframe buttons */}
+                <div className="flex items-center gap-0.5">
+                    {TIMEFRAMES.map((tf) => (
+                        <button
+                            key={tf}
+                            onClick={() => setTimeframe(tf)}
+                            className={cn(
+                                'rounded px-2 py-1 text-[11px] font-medium transition-colors',
+                                timeframe === tf
+                                    ? 'bg-accent font-semibold text-foreground'
+                                    : 'text-muted-foreground hover:bg-muted/30 hover:text-foreground'
+                            )}
+                        >
+                            {tf}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Right side */}
+                <div className="ml-auto flex items-center gap-2">
+                    {isLoading && (
+                        <span className="animate-pulse text-[11px] text-muted-foreground">
+                            Loading...
+                        </span>
+                    )}
+                    <button className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground/40 hover:text-muted-foreground">
+                        <Maximize2 className="h-3.5 w-3.5" />
+                    </button>
+                </div>
             </div>
 
-            {/* Chart container */}
-            <div ref={chartContainerRef} className="h-[400px] w-full" />
+            {/* Chart area with OHLCV overlay */}
+            <div className="relative">
+                {/* OHLCV overlay */}
+                {ohlcvData && (
+                    <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-wrap items-center gap-2 font-mono text-[10px] sm:left-3 sm:gap-3 sm:text-[11px]">
+                        <span className="text-muted-foreground">
+                            O{' '}
+                            <span
+                                className={
+                                    ohlcvData.open <= ohlcvData.close
+                                        ? 'text-emerald-400'
+                                        : 'text-red-400'
+                                }
+                            >
+                                {formatChartValue(ohlcvData.open, chartMode)}
+                            </span>
+                        </span>
+                        <span className="text-muted-foreground">
+                            H{' '}
+                            <span
+                                className={
+                                    ohlcvData.high >= ohlcvData.close
+                                        ? 'text-emerald-400'
+                                        : 'text-red-400'
+                                }
+                            >
+                                {formatChartValue(ohlcvData.high, chartMode)}
+                            </span>
+                        </span>
+                        <span className="text-muted-foreground">
+                            L{' '}
+                            <span
+                                className={
+                                    ohlcvData.low <= ohlcvData.close
+                                        ? 'text-emerald-400'
+                                        : 'text-red-400'
+                                }
+                            >
+                                {formatChartValue(ohlcvData.low, chartMode)}
+                            </span>
+                        </span>
+                        <span className="text-muted-foreground">
+                            C{' '}
+                            <span
+                                className={
+                                    ohlcvData.change >= 0 ? 'text-emerald-400' : 'text-red-400'
+                                }
+                            >
+                                {formatChartValue(ohlcvData.close, chartMode)}
+                            </span>
+                        </span>
+                        <span
+                            className={cn(
+                                'font-semibold',
+                                ohlcvData.change >= 0 ? 'text-emerald-400' : 'text-red-400'
+                            )}
+                        >
+                            {ohlcvData.change >= 0 ? '+' : ''}
+                            {ohlcvData.change.toFixed(2)}%
+                        </span>
+                    </div>
+                )}
+
+                <div
+                    ref={chartContainerRef}
+                    className="h-[320px] w-full md:h-[420px] lg:h-[500px]"
+                />
+            </div>
 
             {/* Empty state overlay */}
             {!isLoading && data.length === 0 && (
-                <div className="absolute inset-x-0 top-[42px] bottom-0 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground pointer-events-none">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 top-11 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
                     <BarChart3 className="h-8 w-8 text-muted-foreground/50" />
                     <span>No trading data yet</span>
                 </div>

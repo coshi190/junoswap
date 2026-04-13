@@ -1,13 +1,13 @@
 export function TokenDetailSkeleton() {
     return (
-        <div className="mx-auto max-w-6xl space-y-4">
+        <div className="space-y-3 md:space-y-4">
             {/* Back link */}
             <div className="h-4 w-40 animate-pulse rounded bg-muted" />
 
             {/* Price header */}
             <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
                 <div className="flex items-center gap-3">
-                    <div className="h-14 w-14 shrink-0 animate-pulse rounded-full bg-muted" />
+                    <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted md:h-14 md:w-14" />
                     <div className="space-y-2">
                         <div className="h-5 w-32 animate-pulse rounded bg-muted" />
                         <div className="h-3 w-24 animate-pulse rounded bg-muted" />
@@ -18,9 +18,9 @@ export function TokenDetailSkeleton() {
             </div>
 
             {/* Grid */}
-            <div className="grid gap-6 lg:grid-cols-12">
+            <div className="grid gap-4 md:gap-6 lg:grid-cols-12">
                 {/* Left column */}
-                <div className="space-y-4 lg:col-span-8">
+                <div className="order-2 space-y-3 md:space-y-4 lg:order-1 lg:col-span-8">
                     {/* Stats bar */}
                     <div className="flex gap-6">
                         {[...Array(4)].map((_, i) => (
@@ -32,7 +32,7 @@ export function TokenDetailSkeleton() {
                     </div>
 
                     {/* Chart */}
-                    <div className="h-[454px] animate-pulse rounded-lg border bg-muted/50" />
+                    <div className="h-[364px] animate-pulse rounded-lg border bg-muted/50 md:h-[464px] lg:h-[554px]" />
 
                     {/* Recent trades */}
                     <div className="rounded-lg border bg-card p-4">
@@ -53,7 +53,7 @@ export function TokenDetailSkeleton() {
                 </div>
 
                 {/* Right column */}
-                <div className="lg:col-span-4">
+                <div className="order-1 lg:order-2 lg:col-span-4">
                     <div className="h-[480px] animate-pulse rounded-xl border bg-muted/50" />
                 </div>
             </div>

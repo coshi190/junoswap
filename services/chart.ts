@@ -1,12 +1,18 @@
 import { formatEther } from 'viem'
-import type { Timeframe, CandlestickData } from '@/types/chart'
+import type { Timeframe, ChartMode, CandlestickData } from '@/types/chart'
 import { TIMEFRAME_DURATIONS } from '@/types/chart'
+
+const TOTAL_SUPPLY = 1_000_000_000 // 1 billion tokens
 
 interface SwapEvent {
     timestamp: number
     isBuy: boolean
     amountIn: bigint
     amountOut: bigint
+}
+
+export function calculateMarketCapValue(event: SwapEvent): number {
+    return calculatePrice(event) * TOTAL_SUPPLY
 }
 
 export function calculatePrice(event: SwapEvent): number {
@@ -27,7 +33,8 @@ function calculateVolume(event: SwapEvent): number {
 
 export function aggregateCandlesticks(
     events: SwapEvent[],
-    timeframe: Timeframe
+    timeframe: Timeframe,
+    mode: ChartMode = 'mcap'
 ): CandlestickData[] {
     if (events.length === 0) return []
 
@@ -35,9 +42,9 @@ export function aggregateCandlesticks(
     const candles = new Map<number, CandlestickData>()
 
     for (const event of events) {
-        const price = calculatePrice(event)
+        const value = mode === 'mcap' ? calculateMarketCapValue(event) : calculatePrice(event)
         const volume = calculateVolume(event)
-        if (price <= 0) continue
+        if (value <= 0) continue
 
         const candleTime = Math.floor(event.timestamp / duration) * duration
 
@@ -45,16 +52,16 @@ export function aggregateCandlesticks(
         if (!existing) {
             candles.set(candleTime, {
                 time: candleTime,
-                open: price,
-                high: price,
-                low: price,
-                close: price,
+                open: value,
+                high: value,
+                low: value,
+                close: value,
                 volume,
             })
         } else {
-            existing.high = Math.max(existing.high, price)
-            existing.low = Math.min(existing.low, price)
-            existing.close = price
+            existing.high = Math.max(existing.high, value)
+            existing.low = Math.min(existing.low, value)
+            existing.close = value
             existing.volume += volume
         }
     }

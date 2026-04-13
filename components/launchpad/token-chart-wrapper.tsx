@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react'
 const TokenChart = dynamic(() => import('./token-chart').then((mod) => mod.TokenChart), {
     ssr: false,
     loading: () => (
-        <div className="flex h-[454px] flex-col items-center justify-center gap-3 rounded-lg border bg-card">
+        <div className="flex h-[364px] flex-col md:h-[464px] lg:h-[554px] items-center justify-center gap-3 rounded-lg border bg-card">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Loading chart...</span>
         </div>

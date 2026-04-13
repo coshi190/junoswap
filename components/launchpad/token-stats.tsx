@@ -45,7 +45,7 @@ export function TokenStats({
     return (
         <div className={cn('space-y-3', className)}>
             {/* Stats row */}
-            <div className="flex items-center gap-6 overflow-x-auto pb-1">
+            <div className="flex items-center gap-3 overflow-x-auto pb-1 sm:gap-6">
                 <StatItem
                     label="Market Cap"
                     value={`${formatCompact(parseFloat(marketCap))} KUB`}

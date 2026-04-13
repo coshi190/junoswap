@@ -60,17 +60,19 @@ export function RecentTrades({ tokenAddr, tokenSymbol, className }: RecentTrades
                 ) : (
                     <>
                         {/* Table header */}
-                        <div className="flex items-center gap-4 border-b px-4 pb-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-                            <span className="w-10">Type</span>
-                            <span className="w-20">Amount</span>
+                        <div className="flex items-center gap-2 border-b px-3 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground font-medium sm:gap-4 sm:px-4 sm:text-[11px]">
+                            <span className="w-10 shrink-0">Type</span>
+                            <span className="hidden w-16 shrink-0 sm:block md:w-20">Amount</span>
                             <span className="flex-1">Price</span>
-                            <span className="w-16 text-right">Value</span>
-                            <span className="w-16 text-right">Time</span>
-                            <span className="w-20 text-right">Wallet</span>
+                            <span className="hidden w-14 shrink-0 text-right sm:block sm:w-16">
+                                Value
+                            </span>
+                            <span className="w-12 shrink-0 text-right sm:w-16">Time</span>
+                            <span className="hidden w-20 shrink-0 text-right lg:block">Wallet</span>
                         </div>
 
-                        <ScrollArea className="h-[320px]">
-                            <div className="px-4">
+                        <ScrollArea className="h-[240px] sm:h-[280px] md:h-[320px]">
+                            <div className="px-3 sm:px-4">
                                 {trades.map((trade, i) => {
                                     const price = calculatePrice(trade)
                                     const valueKub = trade.isBuy
@@ -83,12 +85,12 @@ export function RecentTrades({ tokenAddr, tokenSymbol, className }: RecentTrades
                                     return (
                                         <div
                                             key={`${trade.blockNumber}-${i}`}
-                                            className="flex items-center gap-4 border-b border-border/40 py-1.5 text-xs"
+                                            className="flex items-center gap-2 border-b border-border/40 py-1.5 text-xs sm:gap-4"
                                         >
                                             {/* Type */}
                                             <span
                                                 className={cn(
-                                                    'inline-flex w-10 items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-semibold',
+                                                    'inline-flex w-10 shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-semibold',
                                                     trade.isBuy
                                                         ? 'bg-emerald-500/15 text-emerald-400'
                                                         : 'bg-red-500/15 text-red-400'
@@ -103,7 +105,7 @@ export function RecentTrades({ tokenAddr, tokenSymbol, className }: RecentTrades
                                             </span>
 
                                             {/* Amount */}
-                                            <span className="w-20 font-mono tabular-nums">
+                                            <span className="hidden w-16 shrink-0 font-mono tabular-nums sm:block md:w-20">
                                                 {trade.isBuy
                                                     ? `${formatKub(BigInt(Math.round(amount * 1e18)))} KUB`
                                                     : `${formatTokenAmount(BigInt(Math.round(amount * 1e18)))} ${tokenSymbol}`}
@@ -115,12 +117,12 @@ export function RecentTrades({ tokenAddr, tokenSymbol, className }: RecentTrades
                                             </span>
 
                                             {/* Value */}
-                                            <span className="w-16 text-right font-mono tabular-nums text-muted-foreground">
+                                            <span className="hidden w-14 shrink-0 text-right font-mono tabular-nums text-muted-foreground sm:block sm:w-16">
                                                 {formatCompact(valueKub)}
                                             </span>
 
                                             {/* Time */}
-                                            <span className="w-16 text-right text-muted-foreground">
+                                            <span className="w-12 shrink-0 text-right text-muted-foreground sm:w-16">
                                                 {formatDistanceToNow(trade.timestamp * 1000, {
                                                     addSuffix: false,
                                                     includeSeconds: true,
@@ -129,7 +131,7 @@ export function RecentTrades({ tokenAddr, tokenSymbol, className }: RecentTrades
 
                                             {/* Wallet */}
                                             <span
-                                                className="w-20 text-right font-mono text-muted-foreground"
+                                                className="hidden w-20 shrink-0 text-right font-mono text-muted-foreground lg:block"
                                                 title={trade.sender}
                                             >
                                                 {formatAddress(trade.sender)}

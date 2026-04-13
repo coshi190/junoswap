@@ -83,7 +83,7 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
     }
 
     return (
-        <div className="mx-auto max-w-6xl space-y-4">
+        <div className="space-y-3 md:space-y-4">
             {/* Back button */}
             <Link
                 href="/launchpad"
@@ -94,10 +94,10 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
             </Link>
 
             {/* Price header — full width */}
-            <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+            <div className="flex flex-wrap items-end gap-x-3 gap-y-1.5 md:gap-x-6 md:gap-y-2">
                 {/* Token identity */}
-                <div className="flex items-center gap-3">
-                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-muted">
+                <div className="flex items-center gap-2.5 md:gap-3">
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted md:h-14 md:w-14">
                         {tokenInfo?.logo ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -115,8 +115,8 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
                         )}
                     </div>
                     <div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-xl font-bold">{name}</h1>
+                        <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+                            <h1 className="text-lg font-bold md:text-xl">{name}</h1>
                             <span className="text-sm text-muted-foreground">${symbol}</span>
                             {isGraduated ? (
                                 <Badge className="bg-green-600 text-white text-xs">Graduated</Badge>
@@ -141,9 +141,9 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
                 </div>
 
                 {/* Price display */}
-                <div className="flex items-baseline gap-3">
+                <div className="flex items-baseline gap-2 md:gap-3">
                     {currentPrice !== null ? (
-                        <span className="text-3xl font-bold tabular-nums tracking-tight">
+                        <span className="text-2xl font-bold tabular-nums tracking-tight md:text-3xl">
                             {currentPrice < 0.0001
                                 ? '<0.0001'
                                 : currentPrice < 1
@@ -152,7 +152,9 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
                             KUB
                         </span>
                     ) : (
-                        <span className="text-3xl font-bold text-muted-foreground">--</span>
+                        <span className="text-2xl font-bold text-muted-foreground md:text-3xl">
+                            --
+                        </span>
                     )}
                     {priceChangePercent24h !== null && (
                         <span
@@ -171,9 +173,9 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
             </div>
 
             {/* Two-column grid */}
-            <div className="grid gap-6 lg:grid-cols-12">
+            <div className="grid gap-4 md:gap-6 lg:grid-cols-12">
                 {/* Left column — chart, stats, trades */}
-                <div className="space-y-4 lg:col-span-8">
+                <div className="order-2 space-y-3 md:space-y-4 lg:order-1 lg:col-span-8">
                     {/* Inline market stats */}
                     <TokenStats
                         marketCap={marketCap}
@@ -231,8 +233,8 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
                 </div>
 
                 {/* Right column — sticky trade panel */}
-                <div className="lg:col-span-4">
-                    <div className="lg:sticky lg:top-4">
+                <div className="order-1 lg:order-2 lg:col-span-4">
+                    <div className="lg:sticky lg:top-20">
                         <TokenTradeCard
                             tokenAddr={tokenAddr}
                             tokenSymbol={symbol}
