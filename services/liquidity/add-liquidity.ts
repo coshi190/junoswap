@@ -102,6 +102,22 @@ export function encodeIncreaseLiquidity(params: IncreaseLiquidityCallParams): He
 }
 
 /**
+ * Encode createAndInitializePoolIfNecessary function call
+ */
+export function encodeCreateAndInitializePool(
+    token0: Address,
+    token1: Address,
+    fee: number,
+    sqrtPriceX96: bigint
+): Hex {
+    return encodeFunctionData({
+        abi: NONFUNGIBLE_POSITION_MANAGER_ABI,
+        functionName: 'createAndInitializePoolIfNecessary',
+        args: [token0, token1, fee, sqrtPriceX96],
+    })
+}
+
+/**
  * Encode refundETH function call
  */
 export function encodeRefundETH(): Hex {
@@ -153,6 +169,51 @@ export function buildMintWithNativeMulticall(
     return {
         data: [encodeMint(mintParams), encodeRefundETH()],
         value: nativeAmount,
+    }
+}
+
+/**
+ * Build multicall data for creating a new pool and minting the first position
+ * Bundles: createAndInitializePoolIfNecessary + mint + refundETH (if native token)
+ */
+export function buildPoolCreationMulticall(
+    params: AddLiquidityParams,
+    chainId: number,
+    sqrtPriceX96: bigint
+): { data: Hex[]; value: bigint } {
+    const wrappedNative = getWrappedNativeAddress(chainId)
+    const token0IsNative = isNativeToken(params.token0.address)
+    const token1IsNative = isNativeToken(params.token1.address)
+
+    // Sort tokens for createAndInitializePoolIfNecessary (must be sorted by address)
+    const [sortedToken0, sortedToken1] = sortTokens(
+        { address: params.token0.address },
+        { address: params.token1.address }
+    )
+
+    // Use wrapped native address for pool creation
+    const poolToken0 =
+        token0IsNative && sortedToken0.address.toLowerCase() === params.token0.address.toLowerCase()
+            ? wrappedNative
+            : sortedToken0.address
+    const poolToken1 =
+        token1IsNative && sortedToken1.address.toLowerCase() === params.token1.address.toLowerCase()
+            ? wrappedNative
+            : sortedToken1.address
+
+    const createPoolData = encodeCreateAndInitializePool(
+        poolToken0 as Address,
+        poolToken1 as Address,
+        params.fee,
+        sqrtPriceX96
+    )
+
+    // Build mint data (handles native token wrapping and refundETH)
+    const { data: mintData, value } = buildMintWithNativeMulticall(params, chainId)
+
+    return {
+        data: [createPoolData, ...mintData],
+        value,
     }
 }
 

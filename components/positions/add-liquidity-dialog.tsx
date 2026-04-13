@@ -19,8 +19,14 @@ import { getChainMetadata } from '@/lib/wagmi'
 import { parseTokenAmount, formatBalance, formatTokenAmount } from '@/services/tokens'
 import {
     tickToSqrtPriceX96,
+    priceToSqrtPriceX96,
+    sqrtPriceX96ToTick,
     calculateAmount1FromAmount0,
     calculateAmount0FromAmount1,
+    nearestUsableTick,
+    getTickSpacing,
+    MIN_TICK,
+    MAX_TICK,
 } from '@/lib/liquidity-helpers'
 import { TOKEN_LISTS } from '@/lib/tokens'
 import type { AddLiquidityParams } from '@/types/earn'
@@ -56,15 +62,48 @@ export function AddLiquidityDialog() {
     const [amount0, setAmount0] = useState('')
     const [amount1, setAmount1] = useState('')
     const [activeInput, setActiveInput] = useState<'token0' | 'token1' | null>(null)
+    const [initialPrice, setInitialPrice] = useState('')
     const { pool, isLoading: isLoadingPool } = usePool(token0, token1, fee, chainId)
     const { balance: balance0 } = useTokenBalance({ token: token0, address })
     const { balance: balance1 } = useTokenBalance({ token: token1, address })
+    const initialSqrtPriceX96 = useMemo(() => {
+        if (!initialPrice || !token0 || !token1) return null
+        const priceNum = parseFloat(initialPrice)
+        if (isNaN(priceNum) || priceNum <= 0) return null
+        return priceToSqrtPriceX96(initialPrice, token0.decimals, token1.decimals)
+    }, [initialPrice, token0, token1])
+
+    const derivedTick = useMemo(() => {
+        if (!initialSqrtPriceX96) return null
+        return sqrtPriceX96ToTick(initialSqrtPriceX96)
+    }, [initialSqrtPriceX96])
+
     const mintParams = useMemo<AddLiquidityParams | null>(() => {
-        if (!token0 || !token1 || !address || !pool) return null
+        if (!token0 || !token1 || !address) return null
         if (!amount0 && !amount1) return null
         if (rangeConfig.tickLower >= rangeConfig.tickUpper) return null
+
         const amount0Parsed = amount0 ? parseTokenAmount(amount0, token0.decimals) : 0n
         const amount1Parsed = amount1 ? parseTokenAmount(amount1, token1.decimals) : 0n
+
+        if (pool) {
+            return {
+                token0,
+                token1,
+                fee,
+                tickLower: rangeConfig.tickLower,
+                tickUpper: rangeConfig.tickUpper,
+                amount0Desired: amount0Parsed,
+                amount1Desired: amount1Parsed,
+                slippageTolerance: 100, // 1%
+                deadline: Math.floor(Date.now() / 1000) + 20 * 60,
+                recipient: address,
+            }
+        }
+
+        // No pool: pool creation path requires initial price
+        if (!initialSqrtPriceX96) return null
+
         return {
             token0,
             token1,
@@ -73,11 +112,13 @@ export function AddLiquidityDialog() {
             tickUpper: rangeConfig.tickUpper,
             amount0Desired: amount0Parsed,
             amount1Desired: amount1Parsed,
-            slippageTolerance: 100, // 1%
+            slippageTolerance: 100,
             deadline: Math.floor(Date.now() / 1000) + 20 * 60,
             recipient: address,
+            createPool: true,
+            initialSqrtPriceX96,
         }
-    }, [token0, token1, amount0, amount1, fee, rangeConfig, address, pool])
+    }, [token0, token1, amount0, amount1, fee, rangeConfig, address, pool, initialSqrtPriceX96])
     const {
         needsApproval: needsApproval0,
         approve: approve0,
@@ -123,12 +164,34 @@ export function AddLiquidityDialog() {
         }
     }, [pool, rangeConfig, setRangeConfig])
 
+    // Set full range defaults when creating a pool
+    useEffect(() => {
+        if (
+            !pool &&
+            derivedTick !== null &&
+            token0 &&
+            token1 &&
+            rangeConfig.tickLower === 0 &&
+            rangeConfig.tickUpper === 0
+        ) {
+            const tickSpacing = getTickSpacing(fee)
+            setRangeConfig({
+                preset: 'full',
+                tickLower: nearestUsableTick(MIN_TICK, tickSpacing),
+                tickUpper: nearestUsableTick(MAX_TICK, tickSpacing),
+                priceLower: '0',
+                priceUpper: '∞',
+            })
+        }
+    }, [pool, derivedTick, fee, token0, token1, rangeConfig, setRangeConfig])
+
     // Auto-calculate dependent token amount based on active input
     useEffect(() => {
-        if (!pool || !token0 || !token1) return
+        if (!token0 || !token1) return
+        const sqrtPriceX96 = pool?.sqrtPriceX96 ?? initialSqrtPriceX96
+        if (!sqrtPriceX96) return
         if (rangeConfig.tickLower >= rangeConfig.tickUpper) return
 
-        const sqrtPriceX96 = pool.sqrtPriceX96
         const sqrtPriceLowerX96 = tickToSqrtPriceX96(rangeConfig.tickLower)
         const sqrtPriceUpperX96 = tickToSqrtPriceX96(rangeConfig.tickUpper)
 
@@ -180,6 +243,7 @@ export function AddLiquidityDialog() {
         amount0,
         amount1,
         pool,
+        initialSqrtPriceX96,
         token0,
         token1,
         rangeConfig.tickLower,
@@ -203,6 +267,7 @@ export function AddLiquidityDialog() {
             setAmount0('')
             setAmount1('')
             setActiveInput(null)
+            setInitialPrice('')
         }
     }, [isSuccess, hash, chainId, closeAddLiquidity, refetchPositions])
     useEffect(() => {
@@ -242,6 +307,7 @@ export function AddLiquidityDialog() {
         if (isPreparing) return 'Preparing...'
         if (isExecuting) return 'Confirm in wallet...'
         if (isConfirming) return 'Creating position...'
+        if (!pool) return 'Create Pool & Add Liquidity'
         return 'Add Liquidity'
     }
     const isButtonDisabled = () => {
@@ -249,7 +315,7 @@ export function AddLiquidityDialog() {
         if (!token0 || !token1) return true
         if (!amount0 && !amount1) return true
         if (rangeConfig.tickLower >= rangeConfig.tickUpper) return true
-        if (!pool) return true
+        if (!pool && !initialSqrtPriceX96) return true
         return false
     }
     return (
@@ -288,10 +354,10 @@ export function AddLiquidityDialog() {
                             ))}
                         </div>
                     </div>
-                    {pool && token0 && token1 && (
+                    {token0 && token1 && (pool || derivedTick !== null) && (
                         <RangeSelector
-                            currentTick={pool.tick}
-                            tickSpacing={pool.tickSpacing}
+                            currentTick={pool?.tick ?? derivedTick!}
+                            tickSpacing={pool?.tickSpacing ?? getTickSpacing(fee)}
                             decimals0={token0.decimals}
                             decimals1={token1.decimals}
                             token0Symbol={token0.symbol}
@@ -344,9 +410,24 @@ export function AddLiquidityDialog() {
                         </div>
                     )}
                     {token0 && token1 && !pool && !isLoadingPool && (
-                        <div className="text-center text-muted-foreground text-sm">
-                            No pool exists for this pair and fee tier. Your position will create the
-                            pool.
+                        <div className="space-y-2">
+                            <Label>Initial Price</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                value={initialPrice}
+                                onChange={(e) => setInitialPrice(e.target.value)}
+                                placeholder={`e.g., 1.5 (${token1.symbol} per 1 ${token0.symbol})`}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Starting price for the new pool. How much {token1.symbol} per 1{' '}
+                                {token0.symbol}.
+                            </p>
+                            {initialSqrtPriceX96 && (
+                                <p className="text-xs text-muted-foreground">
+                                    Pool will be created at this price with a full range position.
+                                </p>
+                            )}
                         </div>
                     )}
                     <Button className="w-full" onClick={handleSubmit} disabled={isButtonDisabled()}>

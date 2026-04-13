@@ -19,6 +19,7 @@ import { NONFUNGIBLE_POSITION_MANAGER_ABI } from '@/lib/abis/nonfungible-positio
 import {
     buildMintParams,
     buildMintWithNativeMulticall,
+    buildPoolCreationMulticall,
     buildIncreaseLiquidityParams,
     buildIncreaseLiquidityWithNativeMulticall,
 } from '@/services/liquidity/add-liquidity'
@@ -41,6 +42,24 @@ export function useAddLiquidity(params: AddLiquidityParams | null, skipSimulatio
     const isEnabled = !!params && !!positionManager
     const { callData, value } = useMemo(() => {
         if (!params) return { callData: null, value: 0n }
+
+        // Pool creation path: bundle createAndInitializePoolIfNecessary + mint
+        if (params.createPool && params.initialSqrtPriceX96) {
+            const { data, value } = buildPoolCreationMulticall(
+                params,
+                chainId,
+                params.initialSqrtPriceX96
+            )
+            return {
+                callData: {
+                    functionName: 'multicall' as const,
+                    args: [data] as [Hex[]],
+                },
+                value,
+            }
+        }
+
+        // Existing path: pool already exists
         const { data, value } = buildMintWithNativeMulticall(params, chainId)
         if (data.length === 1) {
             const mintParams = buildMintParams(params)

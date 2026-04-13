@@ -235,6 +235,18 @@ export const NONFUNGIBLE_POSITION_MANAGER_ABI = [
     },
     {
         type: 'function',
+        name: 'createAndInitializePoolIfNecessary',
+        stateMutability: 'payable',
+        inputs: [
+            { name: 'token0', type: 'address' },
+            { name: 'token1', type: 'address' },
+            { name: 'fee', type: 'uint24' },
+            { name: 'sqrtPriceX96', type: 'uint160' },
+        ],
+        outputs: [{ name: 'pool', type: 'address' }],
+    },
+    {
+        type: 'function',
         name: 'refundETH',
         stateMutability: 'payable',
         inputs: [],

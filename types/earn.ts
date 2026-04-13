@@ -94,6 +94,8 @@ export interface AddLiquidityParams {
     slippageTolerance: number // basis points (e.g., 50 = 0.5%)
     deadline: number
     recipient: Address
+    createPool?: boolean
+    initialSqrtPriceX96?: bigint
 }
 
 /**
