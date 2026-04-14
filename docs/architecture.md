@@ -66,16 +66,17 @@ Blockchain Layer
 /swap          # Swap feature (client-side)
 /earn          # Earn feature: LP positions + mining (client-side)
 /bridge        # Bridge feature (client-side)
-/launchpad     # Launchpad feature (coming)
-/points        # Points feature (coming)
+/launchpad              # Memecoin bonding curve (client-side, KUB Testnet)
+/launchpad/token/[addr] # Token detail: chart, trading, graduation progress
+/points                 # Placeholder page (coming in Phase 6)
 ```
 
 ### Component Structure
 
 ```
 components/
-├── ui/                    # shadcn/ui base components (14)
-│   └── (button, dialog, dropdown, etc.)
+├── ui/                    # shadcn/ui base components (19)
+│   └── (avatar, badge, button, card, dialog, dropdown-menu, empty-state, input, label, navigation-menu, radio-group, scroll-area, select, separator, sheet, sonner, switch, table, tabs)
 │
 ├── landing/               # Landing page sections
 │   ├── hero.tsx           # Hero with CTA
@@ -87,11 +88,12 @@ components/
 ├── layout/
 │   └── header.tsx         # Nav + wallet integration
 │
-├── web3/                  # Wallet connection (4 components)
+├── web3/                  # Wallet connection (5 components)
 │   ├── connect-button.tsx # Connection trigger
 │   ├── connect-modal.tsx  # Wallet selector
 │   ├── account-dropdown.tsx # Account actions
-│   └── network-switcher.tsx # Chain switcher
+│   ├── network-switcher.tsx # Chain switcher
+│   └── jazzicon.tsx       # Identicon generation (@metamask/jazzicon)
 │
 └── swap/                  # Swap feature (4 components)
     ├── swap-card.tsx      # Main interface
@@ -109,12 +111,27 @@ components/
 │   ├── position-details-modal.tsx # Position details
 │   └── range-selector.tsx # Price range for V3
 │
-└── mining/                # LP mining/staking (5 components)
+└── mining/                # LP mining/staking (6 components)
     ├── mining-pools.tsx   # Available mining pools
-    ├── incentive-card.tsx # Pool incentive card
+    ├── incentive-row.tsx  # Pool incentive row
+    ├── mining-summary.tsx # Mining overview summary
     ├── stake-dialog.tsx   # Stake LP position
     ├── unstake-dialog.tsx # Unstake + claim rewards
     └── staked-positions.tsx # User's staked positions
+
+├── launchpad/             # Memecoin bonding curve (12 components)
+│   ├── create-token-dialog.tsx # Token creation form
+│   ├── logo-upload.tsx    # IPFS image upload via Pinata
+│   ├── token-list.tsx     # Event-based token discovery
+│   ├── token-card.tsx     # Token card with graduation progress
+│   ├── token-trade-card.tsx # Buy/sell interface
+│   ├── token-chart.tsx    # Candlestick chart (lightweight-charts)
+│   ├── token-chart-wrapper.tsx # Chart with timeframe/mode controls
+│   ├── token-detail-page.tsx # Full token detail view
+│   ├── token-detail-skeleton.tsx # Loading skeleton
+│   ├── token-stats.tsx    # Market stats (mcap, reserves, price)
+│   ├── graduation-progress.tsx # Progress bar toward graduation
+│   └── recent-trades.tsx  # Recent swap events table
 │
 └── bridge/                # Bridge feature (3 components)
     ├── bridge-card.tsx    # Main bridge interface
@@ -367,6 +384,110 @@ User selects chains + tokens + amount
 
 ---
 
+## Launchpad Feature Architecture
+
+### Bonding Curve System
+
+```
+User creates token (name, symbol, logo, description, social links)
+  └─> Pay createFee (0.1 native) + optional initialNative
+  └─> ERC20Token deployed with 1B tokens (INITIALTOKEN)
+  └─> Reserves seeded in PumpReserve mapping
+  └─> Creation event emitted
+
+User buys token
+  └─> Send native (payable)
+  └─> Deduct pumpFee (1% / 100 bps)
+  └─> Constant-product AMM: getAmountOut(afterFee, virtualAmount + nativeReserve, tokenReserve)
+  └─> Tokens transferred to buyer
+  └─> Swap(isBuy=true) event emitted
+
+User sells token
+  └─> ERC20 approval required
+  └─> Deduct pumpFee (1%) from token input
+  └─> Constant-product AMM: getAmountOut(afterFee, tokenReserve, virtualAmount + nativeReserve)
+  └─> Native transferred to seller
+  └─> Swap(isBuy=false) event emitted
+
+Graduation (automatic when threshold reached)
+  └─> Any user calls graduate() when tokenReserve/nativeReserve <= INITIALTOKEN/graduationAmount
+  └─> Creates Uniswap V3 pool (fee tier 10000 = 1%)
+  └─> Mints full-range LP position (tickLower=-887200, tickUpper=887200)
+  └─> LP NFT sent to burn address (0xdead)
+  └─> Reserves deleted from bonding curve
+  └─> Token now trades on JunoSwap V3
+```
+
+### Contract Parameters
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| Contract | `0x77e5D3fC554e30aceFd5322ca65beE15ee6E39a9` | PumpCoreNative on KUB Testnet (25925) |
+| virtualAmount | 3,400 native | Virtual reserve for bonding curve math |
+| graduationAmount | 47,800 native | Native reserve threshold for graduation |
+| createFee | 0.1 native | Fee paid to feeCollector on token creation |
+| pumpFee | 100 (1%) | Basis points fee on buy/sell |
+| INITIALTOKEN | 1,000,000,000 | Token supply at creation (18 decimals) |
+| V3 Fee Tier | 10,000 (1%) | Pool fee tier on graduation |
+| LP Recipient | `0xdead` | Burn address for graduated LP NFT |
+
+**Contract**: `contracts/src/PumpCoreNative.sol` (Solidity 0.8.19)
+**ABI**: `lib/abis/pump-core-native.ts`
+
+### Token Discovery
+
+```
+Token list built from on-chain Creation events
+  └─> useTokenList: fetchCreationLogs via getLogs (Creation event)
+  └─> TokenList component renders cards
+  └─> TokenCard with graduation progress bar
+  └─> Click-through to /launchpad/token/[address]
+```
+
+### Chart System
+
+```
+Swap events aggregated into candlesticks
+  └─> useTokenSwapEvents: fetch Swap events via getLogs
+  └─> services/chart.ts: aggregateCandlesticks(events, timeframe)
+  └─> Supports: 1m, 5m, 15m, 1h, 4h, 1d timeframes
+  └─> Modes: price (native/token) and mcap (price * 1B)
+  └─> token-chart.tsx: lightweight-charts CandlestickSeries
+  └─> token-chart-wrapper.tsx: timeframe + mode selector
+```
+
+### IPFS Image Upload
+
+```
+User selects logo file
+  └─> logo-upload.tsx: file input with MIME validation
+  └─> Server action: app/actions/upload-to-pinata.ts
+  └─> MIME check: PNG, JPG, GIF, SVG, WebP
+  └─> Size limit: 1MB
+  └─> Upload to Pinata v3 API (PINATA_JWT env var)
+  └─> Returns IPFS gateway URL (gateway.pinata.cloud/ipfs/{cid})
+```
+
+### Features
+
+- Token creation with metadata (name, symbol, logo, description, social links)
+- IPFS logo upload via Pinata (server action, MIME + size validation)
+- Bonding curve buy/sell with constant-product AMM (1% fee)
+- Client-side price estimation with slippage protection
+- Graduation progress tracking (nativeReserve / graduationAmount)
+- Real-time candlestick chart (lightweight-charts, 6 timeframes, price/mcap modes)
+- Token discovery via on-chain Creation events
+- Token detail page with trading terminal, chart, stats, and recent trades
+- Currently KUB Testnet only, with chain-not-supported EmptyState for other networks
+
+**Hooks**: `useCreateToken`, `useBondingCurveBuy`, `useBondingCurveSell`, `useTokenPrice`, `useTokenPriceHistory`, `useTokenReserves`, `useTokenSwapEvents`, `useTokenList`
+**Services**: `services/launchpad.ts`, `services/chart.ts`
+**Store**: `store/launchpad-store.ts`
+**Types**: `types/launchpad.ts`, `types/chart.ts`
+**Server Action**: `app/actions/upload-to-pinata.ts`
+
+---
+
 ## State Management
 
 ### Zustand Store
@@ -399,6 +520,15 @@ Manages bridge state with:
 - Settings (slippage)
 - LocalStorage persistence for settings only
 
+**Location**: `store/launchpad-store.ts`
+
+Manages launchpad state with:
+- Create dialog open/close state
+- Selected token address for detail view
+- Settings (slippageBps, default 100 = 1%)
+- LocalStorage persistence for settings only
+- Devtools integration
+
 ### Caching (TanStack Query)
 
 - Balance queries: 30s stale time
@@ -421,6 +551,8 @@ Manages bridge state with:
 8. **Allowance Validation** - Checks token allowance before swap
 9. **Slippage Protection** - User-defined limits enforced
 10. **Deadline Protection** - Transactions expire after user deadline
+11. **Upload Validation** - MIME type whitelist (PNG, JPG, GIF, SVG, WebP) and 1MB file size limit on logo uploads
+12. **Server Action Security** - Pinata uploads run server-side with JWT auth (PINATA_JWT env var), never exposed to client
 
 ---
 
@@ -478,6 +610,9 @@ Vercel Edge
 - `types/web3.ts` - Wallet connection types
 - `types/earn.ts` - LP positions, incentives, staking, rewards
 - `types/bridge.ts` - Bridge state, settings, supported chain IDs
+- `types/launchpad.ts` - LaunchToken, LaunchTokenMarketData, CreateTokenForm, LaunchpadSettings
+- `types/chart.ts` - Timeframe, ChartMode, CandlestickData, TIMEFRAME_DURATIONS
+- `types/jazzicon.d.ts` - Type declarations for @metamask/jazzicon
 
 ### Services
 - `services/tokens.ts` - Token balances, allowances, approvals
@@ -487,6 +622,12 @@ Vercel Edge
 - `services/mining/staking.ts` - Staking transaction encoding
 - `services/mining/rewards.ts` - Reward calculation
 - `services/bridge/lifi.ts` - LI.FI quote/routes/execution/status
+- `services/launchpad.ts` - Bonding curve math (calculateBuyOutput, calculateSellOutput, getAmountOut)
+- `services/chart.ts` - Candlestick aggregation from Swap events, price/mcap calculation
+- `services/liquidity/add-liquidity.ts` - Add liquidity transaction encoding
+- `services/liquidity/remove-liquidity.ts` - Remove liquidity transaction encoding
+- `services/liquidity/fee-collection.ts` - Fee collection transaction encoding
+- `services/liquidity/position-value.ts` - Position value calculation
 
 ### Hooks
 - `hooks/useMultiDexQuotes.ts` - Aggregate all DEX quotes
@@ -501,14 +642,26 @@ Vercel Edge
 - `hooks/useTokenApproval.ts` - Approval flow
 - `hooks/useSwapUrlSync.ts` - URL parameter sync
 - `hooks/useDebounce.ts` - Input debouncing
-- `hooks/usePositions.ts` - LP position management
+- `hooks/useUserPositions.ts` - User LP position management
 - `hooks/usePools.ts` - Pool data fetching
 - `hooks/useIncentives.ts` - Incentive programs
 - `hooks/useStakedPositions.ts` - Staked positions tracking
-- `hooks/usePendingRewards.ts` - Pending rewards calculation
+- `hooks/useRewards.ts` - Pending rewards calculation
 - `hooks/useStaking.ts` - Stake/unstake transactions
 - `hooks/useBridgeQuote.ts` - Debounced route fetching with fee/gas breakdown
 - `hooks/useBridgeExecution.ts` - Route execution with status tracking
+- `hooks/useCreateToken.ts` - Token creation via PumpCoreNative.createToken
+- `hooks/useBondingCurveBuy.ts` - Buy on bonding curve with price estimation
+- `hooks/useBondingCurveSell.ts` - Sell on bonding curve with ERC20 approval
+- `hooks/useTokenPrice.ts` - Token price from bonding curve reserves
+- `hooks/useTokenPriceHistory.ts` - Historical price from Swap events
+- `hooks/useTokenReserves.ts` - Bonding curve reserve data (pumpReserve)
+- `hooks/useTokenSwapEvents.ts` - Swap event logs for a token
+- `hooks/useTokenList.ts` - Token discovery from Creation event logs
+- `hooks/useKkubUnwrap.ts` - KKUB unwrapper contract interaction
+- `hooks/useLiquidity.ts` - Add/increase/remove liquidity, collect fees
+- `hooks/usePositionValue.ts` - Position value in token terms
+- `hooks/useDepositedTokenIds.ts` - Staked position token IDs with localStorage cache
 
 ### ABIs
 - `lib/abis/erc20.ts` - ERC20 token standard
@@ -522,15 +675,18 @@ Vercel Edge
 - `lib/abis/uniswap-v3-swap-router.ts` - V3 router
 - `lib/abis/uniswap-v3-staker.ts` - V3 staker for LP mining
 - `lib/abis/nonfungible-position-manager.ts` - V3 NFT positions
-- `lib/abis/uniswap-v3-pool.ts` - V3 pool state
+- `lib/abis/pump-core-native.ts` - PumpCoreNative bonding curve (createToken, buy, sell, graduate)
 
 ### Utilities
-- `lib/utils.ts` - `cn()` class merger, `formatAddress()`
-- `lib/toast.ts` - Toast notification helpers
-- `lib/routing-config.ts` - Routing configuration
-- `lib/swap-params.ts` - Swap parameter builders
-- `lib/tokens.ts` - Token lists and utilities
-- `lib/dex-config.ts` - DEX registry
+- `lib/utils.ts` - `cn()` class merger, `formatAddress()`, `isValidNumberInput()`
+- `lib/toast.ts` - Toast notification helpers with version tagging
+- `lib/routing-config.ts` - Routing configuration (intermediary tokens, hop limits)
+- `lib/swap-params.ts` - Swap parameter builders for URL sync
+- `lib/tokens.ts` - Token lists per chain and lookup utilities
+- `lib/dex-config.ts` - DEX registry with priority and protocol config
+- `lib/mining-constants.ts` - Known incentive keys per chain
+- `lib/staked-positions-storage.ts` - localStorage utilities for staked position token IDs
+- `lib/liquidity-helpers.ts` - V3 math: tick/price conversions, sqrt ratio, range calculations
 
 ---
 
@@ -541,5 +697,8 @@ Vercel Edge
 **Bridge**: @lifi/sdk 3.16.3
 **State**: Zustand 5.0
 **UI**: Radix UI, Tailwind 3.4, lucide-react, framer-motion, sonner
+**Charts**: lightweight-charts 5.1 (candlestick/price/mcap charting for Launchpad)
+**Identity**: @metamask/jazzicon 2.0 (identicon generation for wallet addresses)
+**Theme**: next-themes 0.4 (dark/light mode support)
 **Dev**: ESLint 9, Prettier 3.4, Husky 9.1, Vitest 2.1, Playwright 1.49
-**Other**: React Hook Form 7.55, Zod 3.24
+**Other**: React Hook Form 7.55, Zod 3.24, date-fns 4.1

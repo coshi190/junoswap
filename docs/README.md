@@ -7,7 +7,7 @@
 **The fastest way to trade tokens across multiple chains.**
 Get the best prices across all DEXs with one click. No registration. No KYC. Just connect and swap.
 
-[Swap →](https://v1.junoswap.xyz/swap) · [Bridge →](https://v1.junoswap.xyz/bridge) · [Earn →](https://v1.junoswap.xyz/earn) · [Documentation →](./architecture.md) · [Discord →](https://discord.gg/k92ReT5EYy)
+[Swap →](https://v1.junoswap.xyz/swap) · [Bridge →](https://v1.junoswap.xyz/bridge) · [Earn →](https://v1.junoswap.xyz/earn) · [Launchpad →](https://v1.junoswap.xyz/launchpad) · [Documentation →](./architecture.md) · [Discord →](https://discord.gg/k92ReT5EYy)
 
 ---
 
@@ -28,6 +28,7 @@ Get the best prices across all DEXs with one click. No registration. No KYC. Jus
 - Customizable slippage protection
 - Native token wrap (KUB↔WKUB, BNB↔WBNB, JBC↔WJBC)
 - Shareable swap configuration links
+- Memecoin launchpad with bonding curve (buy/sell/graduate to V3 pool)
 
 ### Supported Chains
 
@@ -39,6 +40,8 @@ Get the best prices across all DEXs with one click. No registration. No KYC. Jus
 | **Worldchain** | Uniswap V3 | LI.FI | [explorer.alchemy.com](https://worldchain-mainnet.explorer.alchemy.com) |
 | **Base** | Uniswap V3 | LI.FI | [basescan.org](https://basescan.org) |
 | **BNB Chain** | PancakeSwap V3 | LI.FI | [bscscan.com](https://bscscan.com) |
+
+**Launchpad**: Available on KUB Testnet — create and trade memecoins via bonding curve with automatic V3 pool graduation
 
 ---
 

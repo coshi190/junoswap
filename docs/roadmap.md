@@ -4,13 +4,13 @@ Implementation phases and TODO list for Junoswap development.
 
 ## Project Status
 
-**Current Phase**: Phase 5 - Launchpad Feature (Smart Contracts Complete, Frontend In Progress - KUB Testnet)
+**Current Phase**: Phase 5 - Launchpad Feature (Smart Contracts ✅, Frontend ✅, KUB Testnet Testing Pending)
 
 - [x] Phase 1: Foundation ✅
 - [x] Phase 2: Swap Feature & Multi-Chain Expansion ✅
 - [x] Phase 3: Earn Feature ✅
 - [x] Phase 4: Bridge Feature ✅
-- [ ] Phase 5: Launchpad Feature (Smart Contracts ✅, Frontend KUB Testnet ✅)
+- [ ] Phase 5: Launchpad Feature (Smart Contracts ✅, Frontend ✅, Testing pending)
 - [ ] Phase 6: Points Feature
 - [ ] Phase 7: Polish & Optimization
 - [ ] Phase 8: Advanced Features (Post-MVP)
@@ -151,28 +151,56 @@ Implementation phases and TODO list for Junoswap development.
   - [x] Event-based token list from Creation events
   - [x] Token cards with graduation progress
   - [x] Click-through to token detail page
-- [ ] Real-time price chart
-- [ ] Token image upload (IPFS)
+- [x] Real-time price chart (lightweight-charts, 6 timeframes, price/mcap modes)
+- [x] Token image upload (IPFS via Pinata server action, MIME + 1MB validation)
 
-### Files to Create
+### Files Created
 
 ```
 components/launchpad/
-├── launch-form.tsx           # Token creation form
+├── create-token-dialog.tsx   # Token creation form (name, symbol, logo, description, social links)
+├── logo-upload.tsx           # IPFS image upload via Pinata
+├── token-list.tsx            # Event-based token discovery from Creation events
+├── token-card.tsx            # Token card with graduation progress
 ├── token-trade-card.tsx      # Buy/sell bonding curve interface
-├── deploy-status.tsx         # Deployment progress
-└── token-page.tsx            # Deployed token page
+├── token-chart.tsx           # Candlestick chart (lightweight-charts)
+├── token-chart-wrapper.tsx   # Chart with timeframe/mode controls
+├── token-detail-page.tsx     # Full token detail: info, chart, trading, stats, trades
+├── token-detail-skeleton.tsx # Loading skeleton for token detail
+├── token-stats.tsx           # Market stats (mcap, reserves, price)
+├── graduation-progress.tsx   # Progress bar toward graduation threshold
+└── recent-trades.tsx         # Recent swap events table
+
+app/launchpad/
+├── page.tsx                  # Token list page
+└── token/[address]/page.tsx  # Token detail page
+
+app/actions/
+└── upload-to-pinata.ts       # Server action for IPFS uploads (MIME + 1MB validation)
 
 services/
-└── launchpad.ts              # PumpCoreNative contract interaction
+├── launchpad.ts              # Bonding curve math (calculateBuyOutput, calculateSellOutput)
+└── chart.ts                  # Candlestick aggregation from Swap events
 
 hooks/
-├── useCreateToken.ts         # Token creation
-├── useBondingCurve.ts        # Buy/sell on bonding curve
-└── useTokenInfo.ts           # Token data fetching
+├── useCreateToken.ts         # Token creation hook
+├── useBondingCurveBuy.ts     # Buy on bonding curve
+├── useBondingCurveSell.ts    # Sell on bonding curve (with ERC20 approval)
+├── useTokenPrice.ts          # Token price from reserves
+├── useTokenPriceHistory.ts   # Historical price from Swap events
+├── useTokenReserves.ts       # Bonding curve reserve data
+├── useTokenSwapEvents.ts     # Swap event logs for charting
+└── useTokenList.ts           # Token discovery from Creation events
+
+store/
+└── launchpad-store.ts        # Launchpad state (dialog, selected token, slippage)
 
 types/
-└── launchpad.ts              # Launchpad types
+├── launchpad.ts              # LaunchToken, LaunchTokenMarketData, CreateTokenForm
+└── chart.ts                  # Timeframe, ChartMode, CandlestickData
+
+lib/abis/
+└── pump-core-native.ts       # PumpCoreNative ABI + contract address
 ```
 
 ### TODO
@@ -464,7 +492,7 @@ types/
 | Phase 2 | ✅ Complete | - | ✅ Complete | Swap & Multi-Chain |
 | Phase 3 | ✅ Complete | - | ✅ Complete | Earn Feature |
 | Phase 4 | ✅ Complete | - | ✅ Complete | Bridge (LI.FI SDK) |
-| Phase 5 | 2 weeks | In Progress | TBD | Launchpad (Contracts ✅, Frontend pending) |
+| Phase 5 | 2 weeks | In Progress | TBD | Launchpad (Contracts ✅, Frontend ✅, Testing pending) |
 | Phase 6 | 1-2 weeks | TBD | TBD | Points Feature |
 | Phase 7 | 1-2 weeks | TBD | TBD | Polish & Optimization |
 | **MVP Total** | **9-12 weeks** | **TBD** | **TBD** | |
