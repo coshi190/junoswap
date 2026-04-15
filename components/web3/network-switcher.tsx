@@ -162,32 +162,28 @@ function ChainItem({ chainId, currentChainId, pendingChainId, onSelect }: ChainI
             disabled={isActive || isPending}
             className={`flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-150 ${
                 isActive
-                    ? 'bg-primary/5 border border-primary/20 shadow-[0_0_0_1px_hsl(0_100%_60%/0.08),0_0_12px_hsl(0_100%_60%/0.06)]'
+                    ? 'bg-muted/40 border border-border'
                     : 'border border-transparent hover:bg-muted/50'
             } disabled:cursor-not-allowed`}
             aria-label={`Switch to ${meta.name}`}
         >
             <div
-                className={`relative h-8 w-8 flex-shrink-0 rounded-full ${isActive ? 'ring-2 ring-primary/30' : ''}`}
+                className={`relative h-8 w-8 flex-shrink-0 rounded-full ${isActive ? 'ring-2 ring-border' : ''}`}
             >
                 <Image src={meta.icon} alt={meta.name} fill className="rounded-full object-cover" />
             </div>
             <div className="flex-1 text-left">
                 <div
-                    className={`text-sm ${isActive ? 'font-semibold text-primary' : 'font-medium'}`}
+                    className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'font-medium'}`}
                 >
                     {meta.name}
                 </div>
-                <div
-                    className={`text-xs ${isActive ? 'text-primary/60' : 'text-muted-foreground'}`}
-                >
-                    {meta.symbol}
-                </div>
+                <div className="text-xs text-muted-foreground">{meta.symbol}</div>
             </div>
-            {isPending && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+            {isPending && <Loader2 className="h-4 w-4 animate-spin text-foreground" />}
             {isActive && !isPending && (
-                <div className="flex items-center justify-center h-5 w-5 rounded-full bg-primary/10">
-                    <Check className="h-3 w-3 text-primary" />
+                <div className="flex items-center justify-center h-5 w-5 rounded-full bg-foreground/10">
+                    <Check className="h-3 w-3 text-foreground" />
                 </div>
             )}
         </button>

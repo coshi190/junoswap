@@ -25,11 +25,7 @@ export function CTA() {
                                     Launch App
                                 </Button>
                             </Link>
-                            <Button
-                                size="xl"
-                                variant="outline"
-                                className="w-full sm:w-auto border-primary/30 text-primary hover:bg-primary/10"
-                            >
+                            <Button size="xl" variant="ghost" className="w-full sm:w-auto">
                                 Read Docs
                             </Button>
                         </div>

@@ -68,16 +68,18 @@ export function DexSelectCard() {
             const priceDiff = priceDifferences[dexId]
             return (
                 <div className="flex items-center gap-2">
-                    <span className={`text-sm font-medium ${isBest ? 'text-green-600' : ''}`}>
+                    <span
+                        className={`text-sm ${isBest ? 'font-bold bg-gradient-to-r from-primary to-[#FF914D] bg-clip-text text-transparent' : 'font-normal text-muted-foreground'}`}
+                    >
                         {parseFloat(amountOut).toFixed(6)} {tokenOut.symbol}
                     </span>
                     {!isBest &&
                         priceDiff !== null &&
                         priceDiff !== undefined &&
                         priceDiff !== 0 && (
-                            <span className="text-xs text-orange-500">
+                            <span className="text-[10px] text-muted-foreground/50">
                                 {priceDiff > 0 ? '+' : ''}
-                                {priceDiff.toFixed(2)}% vs best
+                                {priceDiff.toFixed(2)}%
                             </span>
                         )}
                 </div>
@@ -86,51 +88,47 @@ export function DexSelectCard() {
         return null
     }
     return (
-        <div className="space-y-2">
-            <Card>
-                <CardContent className="p-4">
-                    <div
-                        onClick={toggleExpanded}
-                        className="flex items-center justify-between w-full text-left cursor-pointer"
-                    >
-                        <div className="flex items-center gap-2">
-                            <Label className="text-muted-foreground">Swap via:</Label>
-                            <span className="font-medium">{selectedDexInfo.displayName}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div
-                                className="flex items-center gap-1.5"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <Label
-                                    htmlFor="auto-select"
-                                    className="text-xs text-muted-foreground cursor-pointer"
-                                >
-                                    Auto
-                                </Label>
-                                <Switch
-                                    id="auto-select"
-                                    checked={settings.autoSelectBestDex}
-                                    onCheckedChange={(checked) => {
-                                        setAutoSelectBestDex(checked)
-                                        if (checked && bestQuoteDex) {
-                                            setSelectedDex(bestQuoteDex)
-                                        }
-                                    }}
-                                />
-                            </div>
-                            {expanded ? (
-                                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            )}
-                        </div>
+        <Card>
+            <CardContent className="p-4">
+                <div
+                    onClick={toggleExpanded}
+                    className="flex items-center justify-between w-full text-left cursor-pointer"
+                >
+                    <div className="flex items-center gap-2">
+                        <Label className="text-muted-foreground">Swap via:</Label>
+                        <span className="font-medium">{selectedDexInfo.displayName}</span>
                     </div>
-                </CardContent>
-            </Card>
-            {expanded && (
-                <Card>
-                    <CardContent className="p-2">
+                    <div className="flex items-center gap-2">
+                        <div
+                            className="flex items-center gap-1.5"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <Label
+                                htmlFor="auto-select"
+                                className="text-xs text-muted-foreground cursor-pointer"
+                            >
+                                Auto
+                            </Label>
+                            <Switch
+                                id="auto-select"
+                                checked={settings.autoSelectBestDex}
+                                onCheckedChange={(checked) => {
+                                    setAutoSelectBestDex(checked)
+                                    if (checked && bestQuoteDex) {
+                                        setSelectedDex(bestQuoteDex)
+                                    }
+                                }}
+                            />
+                        </div>
+                        {expanded ? (
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        )}
+                    </div>
+                </div>
+                {expanded && (
+                    <div className="mt-3 pt-3 border-t">
                         {availableDexs.map((dex) => {
                             const isSelected = dex.id === selectedDex
                             const isBest = bestQuoteDex === dex.id
@@ -144,7 +142,7 @@ export function DexSelectCard() {
                                     }}
                                     className={`w-full text-left p-3 rounded-lg transition-colors ${
                                         isSelected
-                                            ? 'bg-primary/10 hover:bg-primary/15'
+                                            ? 'bg-muted/40 hover:bg-muted/50'
                                             : 'hover:bg-muted/50'
                                     }`}
                                 >
@@ -154,7 +152,7 @@ export function DexSelectCard() {
                                                 {isBest && <Badge variant="secondary">Best</Badge>}
                                                 <span
                                                     className={`font-medium ${
-                                                        isSelected ? 'text-primary' : ''
+                                                        isSelected ? 'text-foreground' : ''
                                                     }`}
                                                 >
                                                     {dex.displayName}
@@ -171,9 +169,9 @@ export function DexSelectCard() {
                                 </button>
                             )
                         })}
-                    </CardContent>
-                </Card>
-            )}
-        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     )
 }
