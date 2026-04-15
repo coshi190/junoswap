@@ -43,8 +43,10 @@ function LaunchpadContent() {
     }
 
     return (
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-            <h1 className="mb-4 text-xl font-bold sm:text-2xl">Launchpad</h1>
+        <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <h1 className="mb-4 inline-block text-xl font-bold bg-gradient-to-r from-primary to-[#FF914D] bg-clip-text text-transparent sm:text-2xl">
+                Launchpad
+            </h1>
 
             {/* Toolbar */}
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

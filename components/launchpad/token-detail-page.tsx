@@ -15,7 +15,6 @@ import { TokenChartWrapper } from './token-chart-wrapper'
 import { TokenStats } from './token-stats'
 import { RecentTrades } from './recent-trades'
 import { TokenDetailSkeleton } from './token-detail-skeleton'
-import { Badge } from '@/components/ui/badge'
 import { Globe, Twitter, MessageCircle, ArrowLeft, Copy, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -118,13 +117,6 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
                         <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                             <h1 className="text-lg font-bold md:text-xl">{name}</h1>
                             <span className="text-sm text-muted-foreground">${symbol}</span>
-                            {isGraduated ? (
-                                <Badge className="bg-green-600 text-white text-xs">Graduated</Badge>
-                            ) : (
-                                <Badge variant="secondary" className="text-xs">
-                                    Bonding Curve
-                                </Badge>
-                            )}
                         </div>
                         <button
                             onClick={copyAddress}
@@ -137,6 +129,45 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
                                 <Copy className="h-3 w-3" />
                             )}
                         </button>
+                        {tokenInfo?.description && (
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {tokenInfo.description}
+                            </p>
+                        )}
+                        {(tokenInfo?.link1 || tokenInfo?.link2 || tokenInfo?.link3) && (
+                            <div className="mt-1 flex gap-2">
+                                {tokenInfo?.link1 && (
+                                    <a
+                                        href={tokenInfo.link1}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                    >
+                                        <Globe className="h-4 w-4" />
+                                    </a>
+                                )}
+                                {tokenInfo?.link2 && (
+                                    <a
+                                        href={tokenInfo.link2}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                    >
+                                        <Twitter className="h-4 w-4" />
+                                    </a>
+                                )}
+                                {tokenInfo?.link3 && (
+                                    <a
+                                        href={tokenInfo.link3}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                    >
+                                        <MessageCircle className="h-4 w-4" />
+                                    </a>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -191,45 +222,6 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
 
                     {/* Recent trades */}
                     <RecentTrades tokenAddr={tokenAddr} tokenSymbol={symbol} />
-
-                    {/* Description & Social links */}
-                    {tokenInfo?.description && (
-                        <p className="text-sm text-muted-foreground">{tokenInfo.description}</p>
-                    )}
-                    {(tokenInfo?.link1 || tokenInfo?.link2 || tokenInfo?.link3) && (
-                        <div className="flex gap-2">
-                            {tokenInfo?.link1 && (
-                                <a
-                                    href={tokenInfo.link1}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                >
-                                    <Globe className="h-4 w-4" />
-                                </a>
-                            )}
-                            {tokenInfo?.link2 && (
-                                <a
-                                    href={tokenInfo.link2}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                >
-                                    <Twitter className="h-4 w-4" />
-                                </a>
-                            )}
-                            {tokenInfo?.link3 && (
-                                <a
-                                    href={tokenInfo.link3}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                >
-                                    <MessageCircle className="h-4 w-4" />
-                                </a>
-                            )}
-                        </div>
-                    )}
                 </div>
 
                 {/* Right column — sticky trade panel */}
