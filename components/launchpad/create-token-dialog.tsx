@@ -145,12 +145,12 @@ export function CreateTokenDialog() {
 
     return (
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-lg max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle className="text-xl">Create Token</DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-5">
+                <div className="space-y-5 overflow-y-auto max-h-[calc(90vh-8rem)] pr-1 sm:max-h-none sm:pr-0">
                     {/* Token Identity */}
                     <div>
                         <div className="grid gap-3 sm:grid-cols-2">
