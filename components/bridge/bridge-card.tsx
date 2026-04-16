@@ -162,7 +162,7 @@ export function BridgeCard() {
                             id="bridge-amount-in"
                             type="text"
                             placeholder="0.0"
-                            className="flex-1"
+                            className="flex-1 h-10 text-xl font-medium md:text-xl"
                             autoFocus
                             autoComplete="off"
                             inputMode="decimal"
@@ -208,7 +208,7 @@ export function BridgeCard() {
                             id="bridge-amount-out"
                             type="text"
                             placeholder="0.0"
-                            className="flex-1"
+                            className="flex-1 h-10 text-xl font-medium md:text-xl"
                             readOnly
                             autoComplete="off"
                             value={isQuoteLoading ? '...' : estimatedOutput}
@@ -218,7 +218,7 @@ export function BridgeCard() {
                 </div>
 
                 {/* Bottom section: quote, settings, button, status */}
-                <div className="space-y-4 p-6">
+                <div className="space-y-4 p-6 pt-0">
                     {route && !isQuoteLoading && (
                         <Card className="bg-muted/50 p-1">
                             <CardContent className="space-y-1 p-3 text-xs">

@@ -354,8 +354,8 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                         <Input
                             id="amount-in"
                             type="text"
-                            placeholder="0.0"
-                            className="flex-1"
+                            placeholder="0"
+                            className="flex-1 h-10 text-2xl font-medium md:text-2xl p-0"
                             autoFocus
                             autoComplete="off"
                             inputMode="decimal"
@@ -399,8 +399,8 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                         <Input
                             id="amount-out"
                             type="text"
-                            placeholder="0.0"
-                            className="flex-1"
+                            placeholder="0"
+                            className="flex-1 h-10 text-2xl font-medium md:text-2xl p-0"
                             readOnly
                             autoComplete="off"
                             value={displayAmountOut}
@@ -408,7 +408,7 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                         <TokenSelect token={tokenOut} tokens={tokens} onSelect={setTokenOut} />
                     </div>
                 </div>
-                <div className="space-y-4 p-6">
+                <div className="space-y-4 p-6 pt-0">
                     {effectiveQuote && tokenIn && tokenOut && !isQuoteLoading && (
                         <Card className="bg-muted/50 p-1">
                             <CardContent className="space-y-1 p-3 text-xs">

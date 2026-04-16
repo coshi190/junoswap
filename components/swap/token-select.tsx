@@ -76,9 +76,6 @@ function TokenList({ tokens, selectedToken, onSelect }: TokenListProps) {
             </div>
             <ScrollArea className="h-96">
                 <div className="py-2 pr-4">
-                    <p className="mb-3 text-xs font-medium text-muted-foreground">
-                        {searchQuery ? 'Search Results' : 'All Tokens'}
-                    </p>
                     {filteredTokens.length === 0 ? (
                         <EmptyState icon={SearchX} title="No tokens found" compact />
                     ) : (
@@ -88,7 +85,7 @@ function TokenList({ tokens, selectedToken, onSelect }: TokenListProps) {
                                     key={token.address}
                                     onClick={() => onSelect(token)}
                                     className={cn(
-                                        'cursor-pointer border-none hover:bg-accent',
+                                        'cursor-pointer border-none bg-transparent hover:bg-accent',
                                         selectedToken?.address === token.address && 'bg-accent'
                                     )}
                                 >
@@ -148,7 +145,7 @@ export function TokenSelect({ token, tokens, onSelect, className }: TokenSelectP
                 <Button
                     variant="outline"
                     className={cn(
-                        'min-w-32 justify-start px-3',
+                        'min-w-32 h-10 justify-start px-3 rounded-xl',
                         !token && 'text-muted-foreground',
                         className
                     )}
@@ -160,7 +157,7 @@ export function TokenSelect({ token, tokens, onSelect, className }: TokenSelectP
                                 <img
                                     src={token.logo}
                                     alt={token.symbol}
-                                    className="h-5 w-5 rounded-full object-cover"
+                                    className="h-6 w-6 rounded-full object-cover"
                                 />
                             )}
                             <span className="font-medium">{token.symbol}</span>
@@ -168,7 +165,7 @@ export function TokenSelect({ token, tokens, onSelect, className }: TokenSelectP
                     ) : (
                         'Select'
                     )}
-                    <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
+                    <ChevronDown className="ml-auto h-5 w-5 opacity-50" />
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
