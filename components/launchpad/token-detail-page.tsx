@@ -14,6 +14,7 @@ import { TokenTradeCard } from './token-trade-card'
 import { TokenChartWrapper } from './token-chart-wrapper'
 import { TokenStats } from './token-stats'
 import { RecentTrades } from './recent-trades'
+import { TokenHolders } from './token-holders'
 import { TokenDetailSkeleton } from './token-detail-skeleton'
 import { Globe, Twitter, MessageCircle, ArrowLeft, Copy, Check } from 'lucide-react'
 import Link from 'next/link'
@@ -224,17 +225,25 @@ export function TokenDetailPage({ tokenAddr }: TokenDetailPageProps) {
                     <RecentTrades tokenAddr={tokenAddr} tokenSymbol={symbol} />
                 </div>
 
-                {/* Right column — sticky trade panel */}
+                {/* Right column — trade panel + holders */}
                 <div className="order-1 lg:order-2 lg:col-span-4">
-                    <div className="lg:sticky lg:top-20">
+                    <div className="space-y-3 md:space-y-4 lg:sticky lg:top-20">
                         <TokenTradeCard
                             tokenAddr={tokenAddr}
                             tokenSymbol={symbol}
                             tokenDecimals={decimals}
                             isGraduated={isGraduated}
                         />
+                        <div className="hidden lg:block">
+                            <TokenHolders tokenAddr={tokenAddr} />
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Holders — full width at bottom on mobile/tablet */}
+            <div className="lg:hidden">
+                <TokenHolders tokenAddr={tokenAddr} />
             </div>
         </div>
     )

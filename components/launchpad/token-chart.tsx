@@ -20,7 +20,7 @@ import type { Address } from 'viem'
 import { useTokenPriceHistory, TIMEFRAMES } from '@/hooks/useTokenPriceHistory'
 import type { ChartMode } from '@/types/chart'
 import { cn } from '@/lib/utils'
-import { BarChart3, TrendingUp, Maximize2 } from 'lucide-react'
+import { BarChart3 } from 'lucide-react'
 
 interface TokenChartProps {
     tokenAddr: Address
@@ -83,12 +83,12 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
             },
             grid: {
                 vertLines: {
-                    color: 'hsl(228, 12%, 9%)',
-                    style: LineStyle.SparseDotted,
+                    color: 'hsl(228, 12%, 15%)',
+                    style: LineStyle.Dotted,
                 },
                 horzLines: {
-                    color: 'hsl(228, 12%, 9%)',
-                    style: LineStyle.SparseDotted,
+                    color: 'hsl(228, 12%, 15%)',
+                    style: LineStyle.Dotted,
                 },
             },
             crosshair: {
@@ -263,18 +263,6 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
         >
             {/* Enhanced toolbar */}
             <div className="flex min-h-11 flex-wrap items-center gap-1.5 border-b border-border/50 px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-0">
-                {/* Chart type icons */}
-                <div className="flex items-center gap-0.5">
-                    <button className="flex h-7 w-7 items-center justify-center rounded bg-accent text-foreground">
-                        <BarChart3 className="h-3.5 w-3.5" />
-                    </button>
-                    <button className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground/40 hover:text-muted-foreground">
-                        <TrendingUp className="h-3.5 w-3.5" />
-                    </button>
-                </div>
-
-                <div className="mx-0.5 h-5 w-px bg-border/50" />
-
                 {/* Mcap / Price toggle */}
                 <div className="flex items-center gap-1">
                     <button
@@ -282,7 +270,7 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
                         className={cn(
                             'rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors',
                             chartMode === 'mcap'
-                                ? 'bg-blue-500/20 text-blue-400'
+                                ? 'bg-accent text-foreground'
                                 : 'text-muted-foreground/40 hover:text-muted-foreground'
                         )}
                     >
@@ -293,7 +281,7 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
                         className={cn(
                             'rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors',
                             chartMode === 'price'
-                                ? 'bg-emerald-500/20 text-emerald-400'
+                                ? 'bg-accent text-foreground'
                                 : 'text-muted-foreground/40 hover:text-muted-foreground'
                         )}
                     >
@@ -328,9 +316,6 @@ export function TokenChart({ tokenAddr, className }: TokenChartProps) {
                             Loading...
                         </span>
                     )}
-                    <button className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground/40 hover:text-muted-foreground">
-                        <Maximize2 className="h-3.5 w-3.5" />
-                    </button>
                 </div>
             </div>
 
