@@ -114,10 +114,7 @@ export function StakedPositions() {
     if (isLoading) {
         return (
             <div className="space-y-4">
-                <div>
-                    <h2 className="text-lg font-semibold">My Staked Positions</h2>
-                    <p className="text-sm text-muted-foreground">Loading staked positions...</p>
-                </div>
+                <h2 className="text-lg font-semibold">My Staked Positions</h2>
                 <LoadingState />
             </div>
         )
@@ -125,10 +122,7 @@ export function StakedPositions() {
     if (enrichedPositions.length === 0) {
         return (
             <div className="space-y-4">
-                <div>
-                    <h2 className="text-lg font-semibold">My Staked Positions</h2>
-                    <p className="text-sm text-muted-foreground">0 staked positions</p>
-                </div>
+                <h2 className="text-lg font-semibold">My Staked Positions</h2>
                 <EmptyState
                     title="No staked positions"
                     description="Stake your LP positions in a mining pool to earn rewards."

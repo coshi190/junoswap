@@ -4,8 +4,8 @@ const liveChains = [
     { name: 'KUB Chain', icon: '/chains/kubchain.png' },
     { name: 'JB Chain', icon: '/chains/jbchain.png' },
     { name: 'Worldchain', icon: '/chains/worldchain.svg' },
-    { name: 'Base', icon: '/chains/base.svg' },
-    { name: 'BNB Chain', icon: '/chains/bnbchain.svg' },
+    { name: 'Base', icon: '/chains/base_white.svg' },
+    { name: 'BNB Chain', icon: '/chains/bnbchain_white.svg' },
 ]
 
 export function Chains() {

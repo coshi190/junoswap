@@ -6,7 +6,6 @@ import { useChainId, useSwitchChain } from 'wagmi'
 import { supportedChains, getChainMetadata, kubTestnet } from '@/lib/wagmi'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
 import { Loader2, ChevronDown, Search, Check } from 'lucide-react'
 import { toastSuccess, toastError } from '@/lib/toast'
 
@@ -111,8 +110,6 @@ function NetworkSwitcherModal({ open, onOpenChange }: NetworkSwitcherModalProps)
                         </div>
                     )}
 
-                    {mainnets.length > 0 && testnets.length > 0 && <Separator />}
-
                     {testnets.length > 0 && (
                         <div className="space-y-1">
                             <p className="text-xs font-medium text-muted-foreground/70 px-1 uppercase tracking-wider">
@@ -160,7 +157,7 @@ function ChainItem({ chainId, currentChainId, pendingChainId, onSelect }: ChainI
         <button
             onClick={() => onSelect(chainId)}
             disabled={isActive || isPending}
-            className={`flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-150 ${
+            className={`flex items-center gap-3 w-full p-2 rounded-xl transition-all duration-150 ${
                 isActive
                     ? 'bg-muted/40 border border-border'
                     : 'border border-transparent hover:bg-muted/50'
@@ -178,7 +175,6 @@ function ChainItem({ chainId, currentChainId, pendingChainId, onSelect }: ChainI
                 >
                     {meta.name}
                 </div>
-                <div className="text-xs text-muted-foreground">{meta.symbol}</div>
             </div>
             {isPending && <Loader2 className="h-4 w-4 animate-spin text-foreground" />}
             {isActive && !isPending && (

@@ -28,8 +28,8 @@ function PoolRow({ pool, onConnect }: { pool: V3PoolData; onConnect: () => void 
     const { isConnected } = useAccount()
     const { openAddLiquidity } = useEarnStore()
     return (
-        <TableRow>
-            <TableCell>
+        <TableRow className="border-0">
+            <TableCell className="p-3">
                 <div className="flex items-center gap-3">
                     <div className="flex -space-x-2">
                         <Avatar className="h-8 w-8 shrink-0 border-2 border-background">
@@ -50,13 +50,13 @@ function PoolRow({ pool, onConnect }: { pool: V3PoolData; onConnect: () => void 
                     </span>
                 </div>
             </TableCell>
-            <TableCell>
+            <TableCell className="p-3">
                 <Badge variant="outline">{formatFeeTier(pool.fee)}</Badge>
             </TableCell>
-            <TableCell>
+            <TableCell className="p-3">
                 <span className="text-sm">{pool.liquidity > 0n ? 'Active' : 'Empty'}</span>
             </TableCell>
-            <TableCell className="text-right">
+            <TableCell className="p-3 text-right">
                 <Button
                     size="sm"
                     variant="outline"
@@ -80,8 +80,8 @@ function LoadingState() {
     return (
         <TableBody>
             {[1, 2, 3].map((i) => (
-                <TableRow key={i}>
-                    <TableCell>
+                <TableRow key={i} className="border-0">
+                    <TableCell className="p-3">
                         <div className="flex items-center gap-3">
                             <div className="flex -space-x-2">
                                 <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
@@ -90,13 +90,13 @@ function LoadingState() {
                             <div className="h-4 w-24 bg-muted rounded animate-pulse" />
                         </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-3">
                         <div className="h-5 w-14 bg-muted rounded animate-pulse" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-3">
                         <div className="h-4 w-12 bg-muted rounded animate-pulse" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-3">
                         <div className="h-8 w-20 bg-muted rounded animate-pulse ml-auto" />
                     </TableCell>
                 </TableRow>
@@ -162,10 +162,10 @@ export function PoolsList() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Pool</TableHead>
-                            <TableHead>Fee Tier</TableHead>
-                            <TableHead>Liquidity</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="py-3 px-4">Pool</TableHead>
+                            <TableHead className="py-3 px-4">Fee Tier</TableHead>
+                            <TableHead className="py-3 px-4">Liquidity</TableHead>
+                            <TableHead className="py-3 px-4 text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <LoadingState />
@@ -188,10 +188,10 @@ export function PoolsList() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Pool</TableHead>
-                            <TableHead>Fee Tier</TableHead>
-                            <TableHead>Liquidity</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="py-3 px-4">Pool</TableHead>
+                            <TableHead className="py-3 px-4">Fee Tier</TableHead>
+                            <TableHead className="py-3 px-4">Liquidity</TableHead>
+                            <TableHead className="py-3 px-4 text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

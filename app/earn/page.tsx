@@ -47,38 +47,39 @@ function EarnContent() {
     return (
         <div className="flex min-h-screen items-start justify-center p-4 pt-8">
             <div className="w-full max-w-5xl space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Liquidity</h1>
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            if (!isConnected) {
-                                setIsConnectModalOpen(true)
-                                return
-                            }
-                            openAddLiquidity()
-                        }}
-                    >
-                        <Plus />
-                        New Position
-                    </Button>
-                </div>
                 <Tabs
                     value={activeTab}
                     onValueChange={(v) => setActiveTab(v as 'pools' | 'positions' | 'mining')}
                 >
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="pools">Pools</TabsTrigger>
-                        <TabsTrigger value="positions">My Positions</TabsTrigger>
-                        <TabsTrigger value="mining">Mining</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="positions" className="mt-4">
-                        <PositionsList />
-                    </TabsContent>
-                    <TabsContent value="pools" className="mt-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                            <TabsList>
+                                <TabsTrigger value="pools">Pools</TabsTrigger>
+                                <TabsTrigger value="positions">My Positions</TabsTrigger>
+                                <TabsTrigger value="mining">Mining</TabsTrigger>
+                            </TabsList>
+                        </div>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                if (!isConnected) {
+                                    setIsConnectModalOpen(true)
+                                    return
+                                }
+                                openAddLiquidity()
+                            }}
+                        >
+                            <Plus />
+                            New Position
+                        </Button>
+                    </div>
+                    <TabsContent value="pools">
                         <PoolsList />
                     </TabsContent>
-                    <TabsContent value="mining" className="mt-4 space-y-6">
+                    <TabsContent value="positions">
+                        <PositionsList />
+                    </TabsContent>
+                    <TabsContent value="mining" className="space-y-6">
                         <MiningSummary />
                         <MiningPools />
                         <StakedPositions />

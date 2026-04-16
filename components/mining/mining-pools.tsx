@@ -86,12 +86,7 @@ export function MiningPools() {
         return (
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-lg font-semibold">Mining Pools</h2>
-                        <p className="text-sm text-muted-foreground">
-                            Stake your LP positions to earn rewards
-                        </p>
-                    </div>
+                    <h2 className="text-lg font-semibold">Mining Pools</h2>
                     <div className="flex items-center space-x-2">
                         <Switch
                             id="hide-ended"
@@ -125,12 +120,7 @@ export function MiningPools() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-lg font-semibold">Mining Pools</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Stake your LP positions to earn rewards
-                    </p>
-                </div>
+                <h2 className="text-lg font-semibold">Mining Pools</h2>
                 <div className="flex items-center space-x-2">
                     <Switch
                         id="hide-ended"
