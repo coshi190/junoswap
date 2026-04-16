@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TokenList } from '@/components/launchpad/token-list'
 import { CreateTokenDialog } from '@/components/launchpad/create-token-dialog'
+import { ActivityTicker } from '@/components/launchpad/activity-feed'
 import { useLaunchpadStore } from '@/store/launchpad-store'
 import { Plus, Search, Unplug } from 'lucide-react'
 
@@ -44,6 +45,9 @@ function LaunchpadContent() {
 
     return (
         <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            {/* Live trade ticker */}
+            <ActivityTicker />
+
             <h1 className="mb-4 inline-block text-xl font-bold bg-gradient-to-r from-primary to-[#FF914D] bg-clip-text text-transparent sm:text-2xl">
                 Launchpad
             </h1>

@@ -96,4 +96,21 @@
     .header-border-glow {
         box-shadow: 0 1px 0 hsl(0 100% 60% / 0.06);
     }
+
+    .ticker-scroll {
+        animation: ticker-scroll 60s linear infinite;
+    }
+
+    .ticker-scroll:hover {
+        animation-play-state: paused;
+    }
+
+    @keyframes ticker-scroll {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
 }

@@ -54,3 +54,22 @@ export interface LaunchpadSettings {
 export const DEFAULT_LAUNCHPAD_SETTINGS: LaunchpadSettings = {
     slippageBps: 100, // 1%
 }
+
+/**
+ * Swap event enriched with token metadata for the activity feed
+ */
+export interface EnrichedSwapEvent {
+    blockNumber: bigint
+    logIndex: number
+    timestamp: number
+    sender: Address
+    isBuy: boolean
+    tokenAddr: Address
+    amountIn: bigint
+    amountOut: bigint
+    reserveIn: bigint
+    reserveOut: bigint
+    tokenSymbol: string
+    tokenName: string
+    tokenLogo: string
+}
