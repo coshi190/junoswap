@@ -22,7 +22,7 @@ async function getWalletClient() {
  * - fee: 3% integrator fee (requires LI.FI whitelisting to activate)
  * - EVM provider: bridges wagmi wallet client for tx execution
  */
-export const lifiConfig = createConfig({
+createConfig({
     integrator: 'cmswap',
     routeOptions: {
         fee: 0.03, // 3% integrator fee — deducted from fromToken

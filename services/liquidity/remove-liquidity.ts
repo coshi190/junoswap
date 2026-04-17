@@ -4,15 +4,10 @@ import type {
     CollectFeesParams,
     DecreaseLiquidityCallParams,
     CollectCallParams,
-    PositionWithTokens,
 } from '@/types/earn'
 import { MAX_UINT128 } from '@/types/earn'
 import { NONFUNGIBLE_POSITION_MANAGER_ABI } from '@/lib/abis/nonfungible-position-manager'
-import {
-    calculateDeadline,
-    calculateMinAmounts,
-    getAmountsForLiquidity,
-} from '@/lib/liquidity-helpers'
+import { calculateDeadline } from '@/lib/liquidity-helpers'
 import { getWrappedNativeAddress } from '@/services/tokens'
 import { shouldSkipUnwrap } from '@/lib/wagmi'
 
@@ -162,130 +157,6 @@ export function buildRemoveWithCollectMulticall(
         }
         data.push(encodeCollect(collectParams))
     }
-
-    return data
-}
-
-/**
- * Calculate removal amounts based on percentage
- * @param position The position to calculate amounts for
- * @param percentage Percentage to remove (0-100)
- * @param sqrtPriceX96 Current pool price
- * @param slippageBps Slippage tolerance in basis points
- */
-export function calculateRemovalAmounts(
-    position: PositionWithTokens,
-    percentage: number,
-    sqrtPriceX96: bigint,
-    slippageBps: number
-): {
-    liquidity: bigint
-    amount0Expected: bigint
-    amount1Expected: bigint
-    amount0Min: bigint
-    amount1Min: bigint
-} {
-    // Calculate liquidity to remove
-    const liquidityToRemove = (position.liquidity * BigInt(percentage)) / 100n
-
-    // Calculate expected amounts
-    const sqrtPriceAX96 = tickToSqrtPriceX96(position.tickLower)
-    const sqrtPriceBX96 = tickToSqrtPriceX96(position.tickUpper)
-    const { amount0, amount1 } = getAmountsForLiquidity(
-        sqrtPriceX96,
-        sqrtPriceAX96,
-        sqrtPriceBX96,
-        liquidityToRemove
-    )
-
-    // Apply slippage
-    const { amount0Min, amount1Min } = calculateMinAmounts(amount0, amount1, slippageBps)
-
-    return {
-        liquidity: liquidityToRemove,
-        amount0Expected: amount0,
-        amount1Expected: amount1,
-        amount0Min,
-        amount1Min,
-    }
-}
-
-// Import needed for calculateRemovalAmounts
-import { tickToSqrtPriceX96 } from '@/lib/liquidity-helpers'
-
-/**
- * Check if position can be burned (liquidity and fees are zero)
- */
-export function canBurnPosition(position: PositionWithTokens): boolean {
-    return position.liquidity === 0n && position.tokensOwed0 === 0n && position.tokensOwed1 === 0n
-}
-
-/**
- * Build remove all liquidity and burn position multicall
- * Used when removing 100% liquidity and wanting to close the position
- */
-export function buildRemoveAllAndBurnMulticall(
-    tokenId: bigint,
-    liquidity: bigint,
-    amount0Min: bigint,
-    amount1Min: bigint,
-    recipient: Address,
-    token0Address: Address,
-    token1Address: Address,
-    deadlineMinutes: number,
-    chainId: number
-): Hex[] {
-    const data: Hex[] = []
-
-    // 1. Decrease all liquidity
-    const decreaseParams: DecreaseLiquidityCallParams = {
-        tokenId,
-        liquidity,
-        amount0Min,
-        amount1Min,
-        deadline: calculateDeadline(deadlineMinutes),
-    }
-    data.push(encodeDecreaseLiquidity(decreaseParams))
-
-    // 2-4. Collect with proper unwrapping (same as remove)
-    const wrappedNative = getWrappedNativeAddress(chainId)
-    const token0IsWrappedNative = token0Address.toLowerCase() === wrappedNative.toLowerCase()
-    const token1IsWrappedNative = token1Address.toLowerCase() === wrappedNative.toLowerCase()
-    const hasWrappedNative = token0IsWrappedNative || token1IsWrappedNative
-
-    // Check if we should skip unwrapping for this chain (KUB Mainnet has KYC on unwrap)
-    const skipUnwrap = shouldSkipUnwrap(chainId)
-
-    if (hasWrappedNative && !skipUnwrap) {
-        const collectParams: CollectCallParams = {
-            tokenId,
-            recipient: '0x0000000000000000000000000000000000000000' as Address,
-            amount0Max: MAX_UINT128,
-            amount1Max: MAX_UINT128,
-        }
-        data.push(encodeCollect(collectParams))
-
-        const unwrapAmount = token0IsWrappedNative ? amount0Min : amount1Min
-        data.push(encodeUnwrapWETH9(unwrapAmount, recipient))
-
-        const sweepToken = token0IsWrappedNative ? token1Address : token0Address
-        const sweepAmount = token0IsWrappedNative ? amount1Min : amount0Min
-        data.push(encodeSweepToken(sweepToken, sweepAmount, recipient))
-    } else {
-        // For KUB Mainnet (skipUnwrap=true) or non-native tokens:
-        // Collect wrapped tokens directly to recipient (no unwrapping)
-        const collectParams: CollectCallParams = {
-            tokenId,
-            recipient,
-            amount0Max: MAX_UINT128,
-            amount1Max: MAX_UINT128,
-        }
-        data.push(encodeCollect(collectParams))
-    }
-
-    // 5. Burn the position NFT (optional, can fail if not empty)
-    // Note: Only add burn if we're sure liquidity and fees will be zero
-    // data.push(encodeBurn(tokenId))
 
     return data
 }

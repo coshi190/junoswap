@@ -396,18 +396,3 @@ export function findTokenByAddress(chainId: number, address: string): Token | un
     }
     return tokens.find((t) => t.address.toLowerCase() === address.toLowerCase())
 }
-
-/**
- * Search tokens by symbol or name
- */
-export function searchTokens(chainId: number, query: string): Token[] {
-    const tokens = TOKEN_LISTS[chainId] || []
-    const lowerQuery = query.toLowerCase()
-
-    return tokens.filter(
-        (token) =>
-            token.symbol.toLowerCase().includes(lowerQuery) ||
-            token.name.toLowerCase().includes(lowerQuery) ||
-            token.address.toLowerCase().includes(lowerQuery)
-    )
-}

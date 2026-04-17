@@ -107,8 +107,6 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
             isLoading: quoteData?.isLoading ?? false,
             isError: quoteData?.isError ?? false,
             error: quoteData?.error ?? null,
-            isWrapUnwrap: false, // Will be calculated below
-            wrapOperation: null as 'wrap' | 'unwrap' | null,
             fee: quoteData?.fee,
         }
     }, [dexQuotes, selectedDex])
@@ -121,16 +119,13 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
         return getWrapOperation(tokenIn, tokenOut)
     }, [tokenIn, tokenOut])
     const { quote, isLoading: isQuoteLoading, isError, error, fee: quoteFee } = selectedDexQuote
-    // Use the selected DEX's quote for display, not the globally best route
-    const effectiveQuote = useMemo(() => {
-        return quote
-    }, [quote])
+    const effectiveQuote = quote
     const shouldShowError = useMemo(() => {
         return isError && !effectiveQuote
     }, [isError, effectiveQuote])
     const isWrapUnwrap = !!wrapOp
     const wrapOperation = wrapOp
-    const fee = quoteFee ?? (isV2Protocol ? 3000 : 3000) // Default to 3000 (0.3%) if not set
+    const fee = quoteFee ?? 3000
     // Track previous values to avoid unnecessary store updates
     const prevQuoteAmountOutRef = useRef<bigint | null>(null)
     const prevIsLoadingRef = useRef<boolean>(false)

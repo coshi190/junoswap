@@ -8,8 +8,6 @@ import { kubTestnet, jbc, bitkub, worldchain, base, bsc } from './wagmi'
 export enum ProtocolType {
     V2 = 'v2',
     V3 = 'v3',
-    STABLE = 'stable',
-    AGGREGATOR = 'aggregator',
 }
 
 /**
@@ -48,30 +46,9 @@ export interface V3Config extends BaseProtocolConfig {
 }
 
 /**
- * Stable swap protocol configuration
- * Used for stable coin DEXs like Curve
- */
-export interface StableConfig extends BaseProtocolConfig {
-    protocolType: ProtocolType.STABLE
-    registry: Address
-    poolFinder?: Address
-    basePool?: Address
-}
-
-/**
- * Aggregator protocol configuration
- * Used for DEX aggregators like 1inch
- */
-export interface AggregatorConfig extends BaseProtocolConfig {
-    protocolType: ProtocolType.AGGREGATOR
-    aggregator: Address
-    apiEndpoint?: string
-}
-
-/**
  * Union type of all protocol configurations
  */
-export type ProtocolConfig = V2Config | V3Config | StableConfig | AggregatorConfig
+export type ProtocolConfig = V2Config | V3Config
 
 /**
  * DEX configuration containing all protocols supported by a DEX
@@ -330,34 +307,6 @@ export function getV2Config(chainId: number, dexId?: DEXType): V2Config | undefi
 }
 
 /**
- * Get protocol configuration for a specific DEX, chain, and protocol type
- */
-export function getProtocolConfig<T extends ProtocolType>(
-    chainId: number,
-    dexId?: DEXType,
-    protocolType?: T
-): Extract<ProtocolConfig, { protocolType: T }> | undefined {
-    const targetDex = dexId || 'junoswap'
-    const dexConfig = DEX_CONFIGS_REGISTRY[targetDex]
-
-    if (!dexConfig) {
-        return undefined
-    }
-
-    const targetProtocol = protocolType || dexConfig.defaultProtocol
-    const chainProtocols = dexConfig.protocols[chainId]
-
-    if (!chainProtocols) {
-        return undefined
-    }
-
-    const config = chainProtocols[targetProtocol]
-    return (config?.enabled ? config : undefined) as
-        | Extract<ProtocolConfig, { protocolType: T }>
-        | undefined
-}
-
-/**
  * Get default protocol configuration for a DEX on a chain
  */
 export function getDexConfig(chainId: number, dexId?: DEXType): ProtocolConfig | undefined {
@@ -374,70 +323,6 @@ export function getDexConfig(chainId: number, dexId?: DEXType): ProtocolConfig |
     }
 
     return chainProtocols[dexConfig.defaultProtocol]
-}
-
-/**
- * Check if a DEX supports a specific protocol on a chain
- */
-export function supportsProtocol(
-    chainId: number,
-    protocolType: ProtocolType,
-    dexId?: DEXType
-): boolean {
-    const targetDex = dexId || 'junoswap'
-    const dexConfig = DEX_CONFIGS_REGISTRY[targetDex]
-
-    if (!dexConfig) {
-        return false
-    }
-
-    const chainProtocols = dexConfig.protocols[chainId]
-    if (!chainProtocols) {
-        return false
-    }
-
-    const protocol = chainProtocols[protocolType]
-    return protocol?.enabled ?? false
-}
-
-/**
- * Check if DEX is available on a chain (supports any protocol)
- */
-export function isDexSupported(chainId: number, dexId?: DEXType): boolean {
-    const targetDex = dexId || 'junoswap'
-    const dexConfig = DEX_CONFIGS_REGISTRY[targetDex]
-
-    if (!dexConfig) {
-        return false
-    }
-
-    const chainProtocols = dexConfig.protocols[chainId]
-    if (!chainProtocols) {
-        return false
-    }
-
-    return Object.values(chainProtocols).some((protocol) => protocol.enabled)
-}
-
-/**
- * Get all supported protocols for a DEX on a chain
- */
-export function getSupportedProtocols(chainId: number, dexId?: DEXType): ProtocolType[] {
-    const targetDex = dexId || 'junoswap'
-    const dexConfig = DEX_CONFIGS_REGISTRY[targetDex]
-
-    if (!dexConfig) {
-        return []
-    }
-
-    const chainProtocols = dexConfig.protocols[chainId]
-    if (!chainProtocols) {
-        return []
-    }
-
-    return Object.values(chainProtocols)
-        .filter((protocol) => protocol.enabled)
-        .map((protocol) => protocol.protocolType)
 }
 
 /**
@@ -494,20 +379,6 @@ export function isV3Config(config: ProtocolConfig): config is V3Config {
 }
 
 /**
- * Type guard to check if config is StableConfig
- */
-export function isStableConfig(config: ProtocolConfig): config is StableConfig {
-    return config.protocolType === ProtocolType.STABLE
-}
-
-/**
- * Type guard to check if config is AggregatorConfig
- */
-export function isAggregatorConfig(config: ProtocolConfig): config is AggregatorConfig {
-    return config.protocolType === ProtocolType.AGGREGATOR
-}
-
-/**
  * Get the spender address for token approval based on protocol type
  * Different protocols use different contract addresses for approvals:
  * - V2: router
@@ -524,10 +395,6 @@ export function getProtocolSpender(config: ProtocolConfig): Address | undefined 
             return config.router
         case ProtocolType.V3:
             return config.swapRouter
-        case ProtocolType.AGGREGATOR:
-            return config.aggregator
-        case ProtocolType.STABLE:
-            return config.registry
         default:
             return undefined
     }

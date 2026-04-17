@@ -223,19 +223,6 @@ export interface EarnSettings {
     showAllPools: boolean
 }
 
-/**
- * Earn feature UI state (not persisted)
- */
-export interface EarnState {
-    selectedPool: V3PoolData | null
-    selectedPosition: PositionDetails | null
-    rangeConfig: RangeConfig
-    isAddLiquidityOpen: boolean
-    isRemoveLiquidityOpen: boolean
-    isCollectFeesOpen: boolean
-    isPositionDetailsOpen: boolean
-}
-
 // ============ Constants ============
 
 /**

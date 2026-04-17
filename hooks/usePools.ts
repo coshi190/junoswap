@@ -8,7 +8,7 @@ import type { V3PoolData } from '@/types/earn'
 import { getV3Config } from '@/lib/dex-config'
 import { UNISWAP_V3_FACTORY_ABI } from '@/lib/abis/uniswap-v3-factory'
 import { UNISWAP_V3_POOL_ABI } from '@/lib/abis/uniswap-v3-pool'
-import { getTickSpacing, sqrtPriceX96ToPrice } from '@/lib/liquidity-helpers'
+import { getTickSpacing } from '@/lib/liquidity-helpers'
 import { sortTokens } from '@/lib/liquidity-helpers'
 
 export function usePool(
@@ -183,23 +183,4 @@ export function usePoolsForPair(
         pools,
         isLoading: isLoadingAddresses || isLoadingStates,
     }
-}
-
-export function usePoolPrice(pool: V3PoolData | null): {
-    price: string
-    priceInverted: string
-} {
-    return useMemo(() => {
-        if (!pool) {
-            return { price: '0', priceInverted: '0' }
-        }
-        const price = sqrtPriceX96ToPrice(
-            pool.sqrtPriceX96,
-            pool.token0.decimals,
-            pool.token1.decimals
-        )
-        const priceNum = parseFloat(price)
-        const priceInverted = priceNum > 0 ? (1 / priceNum).toFixed(6) : '0'
-        return { price, priceInverted }
-    }, [pool])
 }

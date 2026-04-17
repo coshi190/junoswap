@@ -74,27 +74,6 @@ export function getIntermediaryTokens(chainId: number): Address[] {
 }
 
 /**
- * Get wrapped native token for a chain
- */
-export function getWrappedNativeForRouting(chainId: number): Address | null {
-    return INTERMEDIARY_TOKENS[chainId]?.wrappedNative ?? null
-}
-
-/**
- * Check if a token is a valid intermediary for the given chain
- */
-export function isValidIntermediary(chainId: number, tokenAddress: Address): boolean {
-    const config = INTERMEDIARY_TOKENS[chainId]
-    if (!config) return false
-    return config.priority.some((addr) => addr.toLowerCase() === tokenAddress.toLowerCase())
-}
-
-/**
- * Maximum number of hops allowed (2 hops = 3 tokens in path)
- */
-export const MAX_HOPS = 2
-
-/**
  * Minimum improvement (in basis points) required to prefer multi-hop over direct
  * E.g., 50 = 0.5% better output required
  */

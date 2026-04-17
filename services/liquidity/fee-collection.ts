@@ -102,30 +102,3 @@ export function buildCollectWithUnwrapMulticall(
 
     return data
 }
-
-/**
- * Check if a position has uncollected fees
- */
-export function hasUncollectedFees(tokensOwed0: bigint, tokensOwed1: bigint): boolean {
-    return tokensOwed0 > 0n || tokensOwed1 > 0n
-}
-
-/**
- * Format fee amount for display
- */
-export function formatFeeAmount(amount: bigint, decimals: number): string {
-    if (amount === 0n) return '0'
-
-    const divisor = BigInt(10 ** decimals)
-    const whole = amount / divisor
-    const fraction = amount % divisor
-
-    if (fraction === 0n) {
-        return whole.toString()
-    }
-
-    const fractionStr = fraction.toString().padStart(decimals, '0')
-    const trimmed = fractionStr.replace(/0+$/, '')
-
-    return `${whole}.${trimmed}`
-}

@@ -22,9 +22,6 @@ export const kubTestnet = {
 // Supported chains for junoswap
 export const supportedChains = [bitkub, bsc, kubTestnet, jbc, base, worldchain] as const
 
-// Default chain for the app (KUB Mainnet)
-export const defaultChain = bitkub
-
 // Configure RPC URLs
 const rpcUrls = {
     [bsc.id]: 'https://56.rpc.thirdweb.com',
@@ -51,16 +48,6 @@ export const wagmiConfig = createConfig({
         storage: cookieStorage,
     }),
 })
-
-// Chain IDs for easy reference
-export const chainIds = {
-    bsc: bsc.id,
-    bitkub: bitkub.id,
-    kubTestnet: kubTestnet.id,
-    jbc: jbc.id,
-    base: base.id,
-    worldchain: worldchain.id,
-} as const
 
 // Chain metadata for UI display
 export const chainMetadata = {

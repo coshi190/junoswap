@@ -60,55 +60,6 @@ export function getTimeRemaining(endTime: number): {
 }
 
 /**
- * Get time until incentive starts
- */
-export function getTimeUntilStart(startTime: number): {
-    days: number
-    hours: number
-    minutes: number
-    seconds: number
-    hasStarted: boolean
-    totalSeconds: number
-} {
-    const now = Math.floor(Date.now() / 1000)
-    const remaining = startTime - now
-
-    if (remaining <= 0) {
-        return {
-            days: 0,
-            hours: 0,
-            minutes: 0,
-            seconds: 0,
-            hasStarted: true,
-            totalSeconds: 0,
-        }
-    }
-
-    return {
-        days: Math.floor(remaining / 86400),
-        hours: Math.floor((remaining % 86400) / 3600),
-        minutes: Math.floor((remaining % 3600) / 60),
-        seconds: remaining % 60,
-        hasStarted: false,
-        totalSeconds: remaining,
-    }
-}
-
-/**
- * Format incentive duration for display
- */
-export function formatIncentiveDuration(startTime: number, endTime: number): string {
-    const durationSeconds = endTime - startTime
-    const days = Math.floor(durationSeconds / 86400)
-    const hours = Math.floor((durationSeconds % 86400) / 3600)
-
-    if (days > 0) {
-        return hours > 0 ? `${days}d ${hours}h` : `${days} days`
-    }
-    return `${hours} hours`
-}
-
-/**
  * Format time remaining for display
  */
 export function formatTimeRemaining(endTime: number): string {

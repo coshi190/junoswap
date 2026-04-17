@@ -62,6 +62,4 @@ export function toastError(input: Error | string, _context?: string) {
 }
 
 export const toastSuccess = toast.success
-export const toastInfo = toast.info
 export const toastWarning = toast.warning
-export const toastPromise = toast.promise

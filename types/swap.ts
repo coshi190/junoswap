@@ -55,27 +55,6 @@ export interface SwapResult {
 }
 
 /**
- * Pool information
- */
-export interface PoolInfo {
-    address: Address
-    token0: Address
-    token1: Address
-    fee: number
-    liquidity: bigint
-    sqrtPriceX96: bigint
-    tick: number
-}
-
-/**
- * Token pair for swap
- */
-export interface TokenPair {
-    tokenIn: Token
-    tokenOut: Token
-}
-
-/**
  * Slippage tolerance preset
  */
 export type SlippagePreset = '0.1' | '0.5' | '1' | 'custom'

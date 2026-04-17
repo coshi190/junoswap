@@ -346,7 +346,6 @@ export const useEarnStore = create<EarnStore>()(
 // Selectors
 export const useEarnSettings = () => useEarnStore((state) => state.settings)
 export const useMiningSettings = () => useEarnStore((state) => state.miningSettings)
-export const useSelectedPool = () => useEarnStore((state) => state.selectedPool)
 export const useSelectedPosition = () => useEarnStore((state) => state.selectedPosition)
 export const useSelectedIncentive = () => useEarnStore((state) => state.selectedIncentive)
 export const useSelectedStakedPosition = () => useEarnStore((state) => state.selectedStakedPosition)

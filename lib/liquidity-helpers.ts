@@ -9,11 +9,6 @@ import { TICK_SPACING } from '@/types/earn'
 const Q96 = 2n ** 96n
 
 /**
- * Q128 = 2^128, used in fee calculations
- */
-const Q128 = 2n ** 128n
-
-/**
  * Minimum tick value (-887272)
  */
 export const MIN_TICK = -887272
@@ -216,36 +211,6 @@ export function priceToSqrtPriceX96(price: string, decimals0: number, decimals1:
 }
 
 // ============ Liquidity Calculations ============
-
-/**
- * Calculate liquidity from token amounts for a given range
- * Based on Uniswap V3 LiquidityAmounts library
- */
-export function getLiquidityForAmounts(
-    sqrtPriceX96: bigint,
-    sqrtPriceAX96: bigint,
-    sqrtPriceBX96: bigint,
-    amount0: bigint,
-    amount1: bigint
-): bigint {
-    // Ensure sqrtPriceA < sqrtPriceB
-    if (sqrtPriceAX96 > sqrtPriceBX96) {
-        ;[sqrtPriceAX96, sqrtPriceBX96] = [sqrtPriceBX96, sqrtPriceAX96]
-    }
-
-    if (sqrtPriceX96 <= sqrtPriceAX96) {
-        // Current price below range, all token0
-        return getLiquidityForAmount0(sqrtPriceAX96, sqrtPriceBX96, amount0)
-    } else if (sqrtPriceX96 < sqrtPriceBX96) {
-        // Current price in range
-        const liquidity0 = getLiquidityForAmount0(sqrtPriceX96, sqrtPriceBX96, amount0)
-        const liquidity1 = getLiquidityForAmount1(sqrtPriceAX96, sqrtPriceX96, amount1)
-        return liquidity0 < liquidity1 ? liquidity0 : liquidity1
-    } else {
-        // Current price above range, all token1
-        return getLiquidityForAmount1(sqrtPriceAX96, sqrtPriceBX96, amount1)
-    }
-}
 
 /**
  * Calculate liquidity from amount0
@@ -564,33 +529,8 @@ export function sortTokens<T extends { address: string }>(tokenA: T, tokenB: T):
 }
 
 /**
- * Check if tokens are already sorted
- */
-export function tokensAreSorted(token0Address: string, token1Address: string): boolean {
-    return token0Address.toLowerCase() < token1Address.toLowerCase()
-}
-
-// ============ Fee Calculations ============
-
-/**
  * Format fee tier for display
  */
 export function formatFeeTier(fee: number): string {
     return `${(fee / 10000).toFixed(2)}%`
-}
-
-/**
- * Estimate uncollected fees (simplified calculation)
- * Note: Actual fee calculation requires pool feeGrowthGlobal values
- */
-export function estimateFees(
-    liquidity: bigint,
-    feeGrowthInside0: bigint,
-    feeGrowthInside1: bigint,
-    feeGrowthInside0Last: bigint,
-    feeGrowthInside1Last: bigint
-): { fees0: bigint; fees1: bigint } {
-    const fees0 = (liquidity * (feeGrowthInside0 - feeGrowthInside0Last)) / Q128
-    const fees1 = (liquidity * (feeGrowthInside1 - feeGrowthInside1Last)) / Q128
-    return { fees0, fees1 }
 }

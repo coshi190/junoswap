@@ -6,8 +6,6 @@ import type { Route } from '@lifi/types'
  */
 export const BRIDGE_SUPPORTED_CHAIN_IDS = [56, 8453, 480] as const // BSC, Base, Worldchain
 
-export type BridgeChainId = (typeof BRIDGE_SUPPORTED_CHAIN_IDS)[number]
-
 /**
  * Bridge settings
  */
@@ -28,8 +26,3 @@ export interface BridgeState {
     isLoading: boolean
     error: string | null
 }
-
-/**
- * Bridge quote result (LI.FI Route)
- */
-export type BridgeQuote = Route

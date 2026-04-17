@@ -1,4 +1,4 @@
-export type DEXType = 'junoswap' | 'uniswap' | 'sushiswap' | 'pancakeswap' | string
+export type DEXType = 'junoswap' | 'uniswap' | 'pancakeswap' | string
 
 export interface DEXMetadata {
     id: DEXType

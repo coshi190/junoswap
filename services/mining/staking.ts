@@ -1,22 +1,6 @@
 import { encodeFunctionData, encodeAbiParameters, keccak256, type Address, type Hex } from 'viem'
-import type { IncentiveKey, StakeParams, UnstakeParams } from '@/types/earn'
+import type { IncentiveKey, UnstakeParams } from '@/types/earn'
 import { UNISWAP_V3_STAKER_ABI } from '@/lib/abis/uniswap-v3-staker'
-
-// Minimal ABI for safeTransferFrom with data parameter (avoids overload issues)
-const SAFE_TRANSFER_FROM_ABI = [
-    {
-        type: 'function',
-        name: 'safeTransferFrom',
-        stateMutability: 'nonpayable',
-        inputs: [
-            { name: 'from', type: 'address' },
-            { name: 'to', type: 'address' },
-            { name: 'tokenId', type: 'uint256' },
-            { name: 'data', type: 'bytes' },
-        ],
-        outputs: [],
-    },
-] as const
 
 /**
  * Compute the incentive ID from an IncentiveKey
@@ -65,44 +49,6 @@ export function encodeIncentiveKeyData(key: IncentiveKey): Hex {
             },
         ]
     )
-}
-
-/**
- * Encode safeTransferFrom call to deposit and stake NFT in one transaction
- * The V3 Staker's onERC721Received will handle the staking
- */
-export function encodeDepositAndStake(
-    owner: Address,
-    staker: Address,
-    tokenId: bigint,
-    incentiveKey: IncentiveKey
-): Hex {
-    const data = encodeIncentiveKeyData(incentiveKey)
-    return encodeFunctionData({
-        abi: SAFE_TRANSFER_FROM_ABI,
-        functionName: 'safeTransferFrom',
-        args: [owner, staker, tokenId, data],
-    })
-}
-
-/**
- * Encode stakeToken call for already deposited NFT
- */
-export function encodeStakeToken(params: StakeParams): Hex {
-    return encodeFunctionData({
-        abi: UNISWAP_V3_STAKER_ABI,
-        functionName: 'stakeToken',
-        args: [
-            {
-                rewardToken: params.incentiveKey.rewardToken,
-                pool: params.incentiveKey.pool,
-                startTime: BigInt(params.incentiveKey.startTime),
-                endTime: BigInt(params.incentiveKey.endTime),
-                refundee: params.incentiveKey.refundee,
-            },
-            params.tokenId,
-        ],
-    })
 }
 
 /**

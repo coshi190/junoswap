@@ -2,76 +2,18 @@ import type { Address } from 'viem'
 import type { Token } from '@/types/tokens'
 import { ERC20_ABI } from '@/lib/abis/erc20'
 import { isNativeToken } from '@/lib/wagmi'
-import { TOKEN_LISTS, getAllowanceFunctionName } from '@/lib/tokens'
-
-/**
- * Get native token balance
- * This should be called from a hook using useBalance from wagmi
- */
-export function getNativeBalanceQuery(address: Address, chainId: number) {
-    return {
-        address,
-        chainId,
-        queryKey: ['balance', chainId, address, 'native'],
-    }
-}
-
-/**
- * Get ERC20 token balance
- * This should be called from a hook using useReadContract from wagmi
- */
-export function getTokenBalanceQuery(
-    tokenAddress: Address,
-    ownerAddress: Address,
-    chainId: number
-) {
-    return {
-        address: tokenAddress,
-        abi: ERC20_ABI,
-        functionName: 'balanceOf' as const,
-        args: [ownerAddress],
-        chainId,
-        queryKey: ['balance', chainId, ownerAddress, tokenAddress],
-    }
-}
-
-/**
- * Get token allowance
- * This should be called from a hook using useReadContract from wagmi
- */
-export function getTokenAllowanceQuery(
-    tokenAddress: Address,
-    ownerAddress: Address,
-    spenderAddress: Address,
-    chainId: number
-) {
-    return {
-        address: tokenAddress,
-        abi: ERC20_ABI,
-        functionName: getAllowanceFunctionName(tokenAddress),
-        args: [ownerAddress, spenderAddress],
-        chainId,
-        queryKey: ['allowance', chainId, ownerAddress, tokenAddress, spenderAddress],
-    }
-}
-
-/**
- * Build approve transaction parameters
- */
-export function buildApproveParams(tokenAddress: Address, spenderAddress: Address, amount: bigint) {
-    return {
-        address: tokenAddress,
-        abi: ERC20_ABI,
-        functionName: 'approve' as const,
-        args: [spenderAddress, amount] as const,
-    }
-}
+import { TOKEN_LISTS } from '@/lib/tokens'
 
 /**
  * Build infinite approval parameters (use max uint256)
  */
 export function buildInfiniteApprovalParams(tokenAddress: Address, spenderAddress: Address) {
-    return buildApproveParams(tokenAddress, spenderAddress, getMaxUint256())
+    return {
+        address: tokenAddress,
+        abi: ERC20_ABI,
+        functionName: 'approve' as const,
+        args: [spenderAddress, getMaxUint256()] as const,
+    }
 }
 
 /**
@@ -172,40 +114,6 @@ export function parseTokenAmount(amount: string, decimals: number): bigint {
     const fractionPart = BigInt(fraction.padEnd(decimals, '0').slice(0, decimals))
 
     return wholePart * BigInt(10 ** decimals) + fractionPart
-}
-
-/**
- * Get token info (symbol, name, decimals)
- * This should be called from hooks using useReadContract
- */
-export function getTokenSymbolQuery(tokenAddress: Address, chainId: number) {
-    return {
-        address: tokenAddress,
-        abi: ERC20_ABI,
-        functionName: 'symbol' as const,
-        chainId,
-        queryKey: ['token', 'symbol', chainId, tokenAddress],
-    }
-}
-
-export function getTokenNameQuery(tokenAddress: Address, chainId: number) {
-    return {
-        address: tokenAddress,
-        abi: ERC20_ABI,
-        functionName: 'name' as const,
-        chainId,
-        queryKey: ['token', 'name', chainId, tokenAddress],
-    }
-}
-
-export function getTokenDecimalsQuery(tokenAddress: Address, chainId: number) {
-    return {
-        address: tokenAddress,
-        abi: ERC20_ABI,
-        functionName: 'decimals' as const,
-        chainId,
-        queryKey: ['token', 'decimals', chainId, tokenAddress],
-    }
 }
 
 /**

@@ -178,13 +178,3 @@ export const useSwapStore = create<SwapStore>()(
         { name: 'junoswap-swap' }
     )
 )
-
-// Selectors for commonly used values
-export const useSwapSettings = () => useSwapStore((state) => state.settings)
-export const useSwapTokens = () =>
-    useSwapStore((state) => ({ tokenIn: state.tokenIn, tokenOut: state.tokenOut }))
-export const useSwapAmounts = () =>
-    useSwapStore((state) => ({ amountIn: state.amountIn, amountOut: state.amountOut }))
-export const useDexQuotes = () => useSwapStore((state) => state.dexQuotes)
-export const useBestQuoteDex = () => useSwapStore((state) => state.bestQuoteDex)
-export const useAutoSelectBestDex = () => useSwapStore((state) => state.settings.autoSelectBestDex)
