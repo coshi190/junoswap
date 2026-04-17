@@ -74,7 +74,7 @@ export function EmptyState({
                         <Icon
                             className={cn(
                                 'shrink-0 text-primary',
-                                compact ? 'h-7 w-7' : 'h-12 w-12'
+                                compact ? 'h-12 w-12' : 'h-20 w-20'
                             )}
                         />
                     </motion.div>
@@ -92,8 +92,8 @@ export function EmptyState({
                 className={cn(
                     'font-semibold tracking-tight',
                     compact
-                        ? 'text-base text-foreground'
-                        : 'text-xl bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent'
+                        ? 'text-sm text-foreground'
+                        : 'text-lg bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent'
                 )}
             >
                 {title}
@@ -102,7 +102,7 @@ export function EmptyState({
                 <p
                     className={cn(
                         'leading-relaxed text-muted-foreground',
-                        compact ? 'max-w-xs text-sm' : 'max-w-md text-sm'
+                        compact ? 'max-w-xs text-xs' : 'max-w-md text-sm'
                     )}
                 >
                     {description}
