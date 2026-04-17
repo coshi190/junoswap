@@ -108,6 +108,14 @@ export function formatTokenAmount(amount: bigint, decimals: number): string {
     return `${whole}.${trimmed}`
 }
 
+export function formatDisplayAmount(amount: bigint, decimals: number, maxDecimals = 6): string {
+    const raw = formatTokenAmount(amount, decimals)
+    const dotIndex = raw.indexOf('.')
+    if (dotIndex === -1) return raw
+    const truncated = raw.slice(0, dotIndex + 1 + maxDecimals)
+    return truncated.replace(/\.?0+$/, '')
+}
+
 /**
  * Format token balance for UI display with smart notation
  * - Very small numbers (< 0.000001): Show up to 8 significant digits

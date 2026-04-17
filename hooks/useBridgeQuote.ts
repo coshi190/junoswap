@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAccount } from 'wagmi'
 import { parseUnits } from 'viem'
+import { formatDisplayAmount } from '@/services/tokens'
 import type { Route } from '@lifi/types'
 import { useBridgeStore } from '@/store/bridge-store'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -140,15 +141,7 @@ export function useBridgeQuote(): UseBridgeQuoteResult {
         bestRoute && toToken
             ? (() => {
                   try {
-                      const amount = BigInt(bestRoute.toAmount)
-                      const divisor = BigInt(10 ** toToken.decimals)
-                      const whole = amount / divisor
-                      const fraction = amount % divisor
-                      const fractionStr = fraction
-                          .toString()
-                          .padStart(toToken.decimals, '0')
-                          .slice(0, 6)
-                      return `${whole}.${fractionStr}`
+                      return formatDisplayAmount(BigInt(bestRoute.toAmount), toToken.decimals)
                   } catch {
                       return '0'
                   }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { useAccount, useChainId, useSwitchChain } from 'wagmi'
-import { parseUnits, formatUnits } from 'viem'
+import { parseUnits } from 'viem'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -11,7 +11,7 @@ import { useBridgeStore } from '@/store/bridge-store'
 import { useTokenBalance } from '@/hooks/useTokenBalance'
 import { useBridgeQuote } from '@/hooks/useBridgeQuote'
 import { useBridgeExecution } from '@/hooks/useBridgeExecution'
-import { formatBalance, formatTokenAmount } from '@/services/tokens'
+import { formatBalance, formatTokenAmount, formatDisplayAmount } from '@/services/tokens'
 import { ConnectModal } from '@/components/web3/connect-modal'
 import { toastError } from '@/lib/toast'
 import { getTokensForChain } from '@/lib/tokens'
@@ -259,7 +259,7 @@ export function BridgeCard() {
                                     <span className="text-muted-foreground">Min. Received</span>
                                     <span className="font-medium">
                                         {toToken
-                                            ? `${formatUnits(BigInt(route.toAmountMin), toToken.decimals)} ${toToken.symbol}`
+                                            ? `${formatDisplayAmount(BigInt(route.toAmountMin), toToken.decimals)} ${toToken.symbol}`
                                             : '-'}
                                     </span>
                                 </div>

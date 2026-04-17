@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect, useRef, useState } from 'react'
 import { useAccount, useChainId } from 'wagmi'
-import { parseUnits, formatUnits, type Address } from 'viem'
+import { parseUnits, type Address } from 'viem'
 import type { Token } from '@/types/tokens'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -18,7 +18,7 @@ import { useTokenApproval } from '@/hooks/useTokenApproval'
 import { useSwapUrlSync } from '@/hooks/useSwapUrlSync'
 import { calculateMinOutput } from '@/services/dex/uniswap-v3'
 import { calculateMinOutput as calculateMinOutputV2 } from '@/services/dex/uniswap-v2'
-import { formatBalance, formatTokenAmount } from '@/services/tokens'
+import { formatBalance, formatTokenAmount, formatDisplayAmount } from '@/services/tokens'
 import { ConnectModal } from '@/components/web3/connect-modal'
 import { toastError } from '@/lib/toast'
 import { getTokensForChain } from '@/lib/tokens'
@@ -171,7 +171,7 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
         if (isQuoteLoading) return '...'
         if (shouldShowError) return '0'
         if (effectiveQuote && tokenOut) {
-            return formatUnits(effectiveQuote.amountOut, tokenOut.decimals)
+            return formatDisplayAmount(effectiveQuote.amountOut, tokenOut.decimals)
         }
         return '0'
     }, [effectiveQuote, isQuoteLoading, shouldShowError, tokenOut])
@@ -469,7 +469,10 @@ export function SwapCard({ tokens: tokensOverride }: SwapCardProps) {
                                                 Min. Received
                                             </span>
                                             <span className="font-medium">
-                                                {formatUnits(amountOutMinimum, tokenOut.decimals)}{' '}
+                                                {formatDisplayAmount(
+                                                    amountOutMinimum,
+                                                    tokenOut.decimals
+                                                )}{' '}
                                                 {tokenOut.symbol}
                                             </span>
                                         </div>
