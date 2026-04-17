@@ -23,7 +23,7 @@ async function getWalletClient() {
  * - EVM provider: bridges wagmi wallet client for tx execution
  */
 export const lifiConfig = createConfig({
-    integrator: 'junoswap',
+    integrator: 'cmswap',
     routeOptions: {
         fee: 0.03, // 3% integrator fee — deducted from fromToken
     },
