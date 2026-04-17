@@ -84,7 +84,7 @@ export function ActivityTicker() {
 
     if (isLoading) {
         return (
-            <div className="mb-4 overflow-hidden rounded-lg border border-border/40 bg-card/30 px-3 py-2">
+            <div className="mb-4 overflow-hidden px-3 py-2">
                 <SkeletonTicker />
             </div>
         )
@@ -92,7 +92,7 @@ export function ActivityTicker() {
 
     if (events.length === 0) {
         return (
-            <div className="mb-4 overflow-hidden rounded-lg border border-border/40 bg-card/30 px-3 py-2">
+            <div className="mb-4 overflow-hidden px-3 py-2">
                 <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/50">
                     <Activity className="h-3.5 w-3.5" />
                     <span>No recent activity</span>
@@ -105,7 +105,7 @@ export function ActivityTicker() {
     const tickerItems = events.length > 3 ? [...events, ...events] : events
 
     return (
-        <div className="mb-4 overflow-hidden rounded-lg border border-border/40 bg-card/30">
+        <div className="mb-4 overflow-hidden">
             <div className="flex items-center">
                 {/* Scrolling trades */}
                 <div className="min-w-0 flex-1 overflow-hidden py-2 pl-3">
