@@ -8,6 +8,7 @@
 Get the best prices across all DEXs with one click. No registration. No KYC. Just connect and swap.
 
 [Swap →](https://junoswap.xyz/swap) · [Bridge →](https://junoswap.xyz/bridge) · [Earn →](https://junoswap.xyz/earn) · [Launchpad →](https://junoswap.xyz/launchpad)
+
 ---
 
 ### Features
